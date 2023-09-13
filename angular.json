@@ -99,6 +99,42 @@
           }
         }
       }
+    },
+    "rich-text-editor": {
+      "projectType": "library",
+      "root": "projects/rich-text-editor",
+      "sourceRoot": "projects/rich-text-editor/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/rich-text-editor/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/rich-text-editor/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/rich-text-editor/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/rich-text-editor/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

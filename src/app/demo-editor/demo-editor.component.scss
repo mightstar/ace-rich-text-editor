@@ -1,0 +1,49 @@
+.quick-toolbar {
+    // backgroundcolor: 'grey';
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    opacity: 0;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s opacity;
+    z-index: 2;
+    animation: fadeIn 1s ease-in forwards;
+    // display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.quick-toolbar.focus {
+    opacity: 1;
+}
+
+.quick-toolbar.not-focus {
+    opacity: 0.5;
+}
+
+.quick-toolbar li {
+    margin-right: 10px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+
+}
+
+.quick-toolbar li.active {
+    background-color: dodgerblue;
+    color: white;
+}
+
+.quick-toolbar li:hover {
+    background-color: purple;
+    color: white;
+}
+

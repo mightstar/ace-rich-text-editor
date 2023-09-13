@@ -1,0 +1,16 @@
+<p>demo-editor works!</p>
+<ng-template #quick_toolbar>
+
+    <div>
+        <demo-button *ngFor="let toolbarItem of toolbarItems" [active]="toolbarItem.active(toolbarItem.format)"
+            (onMouseDown)="toolbarItem.action(toolbarItem.format)"><span class="material-icons">{{ toolbarItem.icon
+                }}</span></demo-button>
+    </div>
+
+</ng-template>
+
+<rte-root #editor [cdkQuickToolbar]="quick_toolbar" (cdkEditorSelectionChanged)="selectionChanged">
+    <p>
+        Hello world
+    </p>
+</rte-root>
