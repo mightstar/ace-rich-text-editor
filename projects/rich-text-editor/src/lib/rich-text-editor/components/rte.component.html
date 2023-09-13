@@ -4,8 +4,8 @@
   <div #quickToolbar class="demo-global-toolbar">
     <ng-container *ngTemplateOutlet="quick_toolbar"></ng-container>
   </div>
-  <div #richText class="rte-text-editor" id="textBox" contenteditable="true" (mousedown)="onMouseDown($event)"
-    (mouseup)="onMouseUp($event)">
+  <div #richText class="rte-text-editor" id="textBox" contenteditable="true" (mousedown)="onMouseDown($event)" 
+    (mouseup)="onMouseUp($event)" (input)="onSelect($event)">
     <div>
       <p>Hello world</p>
       <h1>hello world</h1>

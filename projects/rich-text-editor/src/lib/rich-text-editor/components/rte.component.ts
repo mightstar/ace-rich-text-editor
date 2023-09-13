@@ -12,7 +12,7 @@ export class CdkRichTextEditorComponent {
   oDoc: any;
 
   //Get div element to pass content to input
-  @ViewChild('richText') richText!: ElementRef;
+  @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
 
   @Input('cdkQuickToolbar') quick_toolbar!: TemplateRef<any>;
@@ -65,36 +65,49 @@ export class CdkRichTextEditorComponent {
 
   private previousSelection!: Selection | null;
 
-  
-  
+
+
   onMouseDown(event: MouseEvent) {
     // this.previousSelection = window.getSelection();
     console.log('event', event);
   }
 
   onMouseUp(event: MouseEvent) {
-    console.log('event', event);
-    const currentSelection = window.getSelection();
+    setTimeout(() => {
+      console.log('event', event);
+      const currentSelection = window.getSelection();
 
-    console.log('currentSelection', currentSelection?.type);
+      console.log('currentSelection', currentSelection?.toString());
 
-    if (currentSelection && currentSelection.type == 'Range') {
-      let quickToolbar = this.quickToolbar.nativeElement;
-      quickToolbar.style.opacity = '1';
+      if (currentSelection && currentSelection?.toString() != '') {
+        let quickToolbar = this.quickToolbar.nativeElement;
+        quickToolbar.style.opacity = '1';
+        quickToolbar.style.zIndex = "10";
+        const x = event.clientX - this.richText.nativeElement.getBoundingClientRect().x;
+        const y = event.clientY- this.richText.nativeElement.getBoundingClientRect().y;
+        quickToolbar.style.top = y + 'px';
+        quickToolbar.style.left = x + 'px';
 
-      console.log('quickToolbar', quickToolbar);
-    } else {
-      // this.quickToolbar.nativeElement.style.opacity = '0';
-      let quickToolbar = this.quickToolbar.nativeElement;
-      quickToolbar.style.opacity = '0';
+        console.log('quickToolbar', quickToolbar);
+      } else {
+        // this.quickToolbar.nativeElement.style.opacity = '0';
+        let quickToolbar = this.quickToolbar.nativeElement;
+        quickToolbar.style.opacity = '0';
+        quickToolbar.style.zIndex = "-1";
 
-    }
-    if (currentSelection !== this.previousSelection) {
-      currentSelection && this.selectionChanged.emit(currentSelection);
-      this.previousSelection = currentSelection;
-    }
+
+      }
+      if (currentSelection !== this.previousSelection) {
+        currentSelection && this.selectionChanged.emit(currentSelection);
+        this.previousSelection = currentSelection;
+      }
+    }, 10);
+
   }
-
+  onSelect(event: any) {
+    const selectedText = window.getSelection()?.toString();
+    console.log(selectedText);
+  }
   constructor(
     private elementRef: ElementRef<HTMLElement>,
     private viewContainerRef: ViewContainerRef,

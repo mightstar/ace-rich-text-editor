@@ -33,6 +33,6 @@ export class DemoButtonComponent implements OnChanges {
     }
 
     ngOnChanges() {
-        this.renderer2.setStyle(this.elementRef.nativeElement, 'color', this.active ? 'black' : '#ccc');
+        this.renderer2.setStyle(this.elementRef.nativeElement, 'color', this.active ? 'black' : 'black');
     }
 }
