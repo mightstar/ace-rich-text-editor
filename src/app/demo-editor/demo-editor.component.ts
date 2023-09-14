@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, ElementRef, HostListener,ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkRichTextEditor } from 'projects/rich-text-editor/src/lib/rich-text-editor';
 import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
@@ -28,89 +28,84 @@ export class DemoEditorComponent {
   @ViewChild('editor', { read: CdkRichTextEditorComponent, static: true })
   editor!: CdkRichTextEditorComponent;
 
-
-  toggleBlock = (format: any) => {
-    const isActive = this.isBlockActive(format);
-    const isList = LIST_TYPES.includes(format);
-
-  };
-
-
   toggleMark = (format: any) => {
-    console.log(format);
     this.editor.toggleMark(format);
-  };
-
-  isBlockActive = (format: any) => {
-    return false;
+    this.updateToolbar();
   };
 
   isMarkActive = (format: any) => {
-    return this.editor.isMarkActive(format);
+    let isActive = this.editor.isMarkActive(format);
+    return isActive;
   };
 
-  selectionChanged(event : Selection) {
-    console.log("selectionChanged" , event);
+  selectionChanged(event: Selection) {
+    this.updateToolbar();
+  }
+
+  updateToolbar() {
+    this.toolbarItems.forEach(item => {
+      item.active = this.isMarkActive(item.format);
+    });
   }
 
   toolbarItems = [
     {
       format: MarkTypes.bold,
       icon: 'format_bold',
-      active: this.isMarkActive,
+      active: false,
       action: this.toggleMark
     },
     {
       format: MarkTypes.italic,
       icon: 'format_italic',
-      active: this.isMarkActive,
+      active: false,
       action: this.toggleMark
     },
     {
       format: MarkTypes.underline,
       icon: 'format_underlined',
-      active: this.isMarkActive,
+      active: false,
       action: this.toggleMark
     },
     {
       format: MarkTypes.code,
       icon: 'code',
-      active: this.isMarkActive,
+      active: false,
       action: this.toggleMark
     },
     {
       format: 'heading-one',
       icon: 'looks_one',
-      active: this.isBlockActive,
+      active: false,
       action: this.toggleMark
     },
     {
       format: 'heading-two',
       icon: 'looks_two',
-      active: this.isBlockActive,
-      action: this.toggleBlock
+      active: false,
+      action: this.toggleMark
     },
     {
-      format: 'block-quote',
-      icon: 'format_quote',
-      active: this.isBlockActive,
-      action: this.toggleBlock
+      format: 'blockquote',
+      icon: 'format_quote', 
+      active: false,
+      action: this.toggleMark
     },
     {
       format: 'numbered-list',
       icon: 'format_list_numbered',
-      active: this.isBlockActive,
-      action: this.toggleBlock
+      active: false,
+      action: this.toggleMark
     },
     {
       format: 'bulleted-list',
       icon: 'format_list_bulleted',
-      active: this.isBlockActive,
-      action: this.toggleBlock
+      active: false,
+      action: this.toggleMark
     }
   ];
 
 
 
-  
+
 }

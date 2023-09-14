@@ -1,2 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
 @import './assets/materialicons/icon.css';
+
+blockquote {
+    border-left: 2px solid #ddd;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 10px;
+    color: #aaa;
+    font-style: italic;
+}
+
+code {
+    font-family: monospace;
+    background-color: #aaa;
+    
+    padding: 3px;
+}

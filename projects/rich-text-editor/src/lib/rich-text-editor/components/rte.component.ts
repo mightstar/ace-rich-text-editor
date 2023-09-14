@@ -16,32 +16,191 @@ export class CdkRichTextEditorComponent {
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
 
   @Input('cdkQuickToolbar') quick_toolbar!: TemplateRef<any>;
+  @Output('cdkEditorSelectionChanged') selectionChanged = new EventEmitter<Selection>();
 
+  private previousSelection!: Selection | null;
 
-  ngAfterViewInit() {
+  isMarkActive(format: any): boolean {
+    const selection = document.getSelection();
+
+    if (format == 'heading-one') {
+      return (this.isChildOfTag(selection?.anchorNode, 'h1'));
+    }
+    if (format == 'heading-two') {
+      return (this.isChildOfTag(selection?.anchorNode, 'h2'));
+    }
+    if (format == 'blockquote') {
+      return (this.isChildOfTag(selection?.anchorNode, 'blockquote'));
+    }
+    if (format == 'code-line') {
+      return this.checkInlineTag('code');
+    }
+
+    return document.queryCommandState(format);
+
 
   }
 
 
-  //Text formatting function
-  //Initializing variable
+  addMark(format: any, value?: string) {
+    this.oDoc = document.getElementById("textBox");
+    console.log('format', format);
 
+    switch (format) {
+      case "heading-one":
+        document.execCommand('formatBlock', false, 'h1');
+        break;
+      case "heading-two":
+        document.execCommand('formatBlock', false, 'h2');
+        break;
+      case "code-line":
+        this.wrapInlineTag('code');
+        // document.execCommand('formatBlock', false, 'pre');
+        break;
+      case "blockquote":
+        document.execCommand('formatBlock', false, 'blockquote');
 
-  addMark(format: any) {
+        break;
+      case "numbered-list":
+        document.execCommand('insertUnorderedList');
 
+        break;
+      case "bulleted-list":
+        document.execCommand('insertOrderedList');
+
+        break;
+
+      default:
+        document.execCommand(format);
+        break;
+    }
+
+    this.oDoc?.focus();
+  }
+  wrapInlineTag(tag: string) {
+    const selection = document.getSelection();
+    if (selection) {
+      const range = selection.getRangeAt(0);
+      const code = document.createElement(tag);
+      code.appendChild(range.extractContents());
+
+      range.insertNode(code);
+    }
+
+  }
+  checkInlineTag(tag: string): boolean {
+    const selectedNode = this.getSelectedNode();
+    if (selectedNode == null) return false;
+    return this.isChildOfTag(selectedNode, tag);
+  }
+
+  getSelectedNode(): Node | ChildNode | null {
+    const selection = window.getSelection();
+    if (!selection?.anchorNode)
+      return null;
+    // console.log('selection.anchorNode', selection.getRangeAt(0));
+    const anchorNode = selection.anchorNode;
+    let element: Node | ChildNode | null = anchorNode;
+
+    if (anchorNode instanceof Text) {
+      // console.log('textAnchor', selection.anchorOffset, textAnchor.textContent?.length);
+      if ((anchorNode as Text).textContent?.length == selection.anchorOffset) {
+        console.log("nextContainer");
+        element = anchorNode.nextSibling;
+
+      } else {
+        console.log("anchorContainer");
+        element = anchorNode.parentNode;
+      }
+    } else {
+      if ((anchorNode as HTMLElement).childNodes.length == selection.anchorOffset) {
+        console.log("nextContainer");
+        element = anchorNode.nextSibling;
+      } else {
+        console.log("anchorContainer");
+      }
+    }
+    return element;
+  }
+
+  removeInlineTag(tag: string) {
+    const selectedNode = this.getSelectedNode();
+    selectedNode && this.untagParent(selectedNode, tag);
   }
 
   removeMark(format: any) {
+    const selection = document.getSelection();
 
+    this.oDoc = document.getElementById("textBox");
+    switch (format) {
+      case "heading-one":
+        selection?.anchorNode && this.untagParent(selection?.anchorNode, 'h1');
+        break;
+      case "heading-two":
+        selection?.anchorNode && this.untagParent(selection?.anchorNode, 'h2');
+        break;
+      case "blockquote":
+        selection?.anchorNode && this.untagParent(selection?.anchorNode, 'blockquote');
+        break;
+      case "code-line":
+        this.removeInlineTag('code');
+        break;
+      case "bold":
+      case "italic":
+      case "underline":
+
+        document.execCommand(format);
+        break;
+      default:
+        document.execCommand('removeForamt', false);
+        break;
+    }
+    this.oDoc?.focus();
   }
 
-  isMarkActive(format: any): boolean {
+  untagParent(node: ChildNode | Node | null, tag: string): void {
+    let element = this.findParentWithTag(node, tag);
+    console.log('element', element);
+    if (element && element instanceof HTMLElement) {
+      const htmlElement = element as HTMLElement;
+      let newElement = document.createElement('span');
+      newElement.innerHTML = htmlElement.innerHTML;
+      htmlElement.replaceWith(newElement);
+
+    }
+  }
+
+  isChildOfTag(node: any, tag: string): boolean {
+    let parentElement: Node | ChildNode | null = node;
+
+    while (parentElement && parentElement !== this.richText.nativeElement) {
+
+
+      if (parentElement.nodeName.toLocaleLowerCase() === tag)
+        return true;
+      parentElement = parentElement.parentElement;
+    }
+
     return false;
-
   }
+
+  findParentWithTag(node: Node | ChildNode | null, tag: string): Node | null {
+    let parentElement = node;
+
+    while (parentElement) {
+
+      if (parentElement.nodeName.toLowerCase() === tag && parentElement !== this.richText.nativeElement)
+        return parentElement;
+      parentElement = parentElement.parentElement;
+    }
+
+    return null;
+  }
+
+
 
   toggleMark(format: any) {
-    this.formatDoc(format);
+    console.log('format', format)
     if (!this.isMarkActive(format)) {
       this.addMark(format);
     } else {
@@ -50,63 +209,57 @@ export class CdkRichTextEditorComponent {
   }
 
 
-  formatDoc(cmd: any) {
-    this.oDoc = document.getElementById("textBox");
-    let format: string = cmd;
-    if (format == 'heading-one') {
-      document.execCommand('heading', false, 'h1');
-    } else
-      document.execCommand(cmd);
-    this.oDoc?.focus();
-
-
-  }
-  @Output('cdkEditorSelectionChanged') selectionChanged = new EventEmitter<Selection>();
-
-  private previousSelection!: Selection | null;
-
-
-
   onMouseDown(event: MouseEvent) {
     // this.previousSelection = window.getSelection();
-    console.log('event', event);
   }
 
   onMouseUp(event: MouseEvent) {
     setTimeout(() => {
-      console.log('event', event);
       const currentSelection = window.getSelection();
+      currentSelection && this.selectionChanged.emit(currentSelection);
 
-      console.log('currentSelection', currentSelection?.toString());
 
       if (currentSelection && currentSelection?.toString() != '') {
         let quickToolbar = this.quickToolbar.nativeElement;
-        quickToolbar.style.opacity = '1';
-        quickToolbar.style.zIndex = "10";
-        const x = event.clientX - this.richText.nativeElement.getBoundingClientRect().x;
-        const y = event.clientY- this.richText.nativeElement.getBoundingClientRect().y;
+        quickToolbar.classList.remove('hide');
+        quickToolbar.classList.add('show');
+        const PADDING = 10;
+        const range = currentSelection.getRangeAt(0);
+        const selectedRect = range.getBoundingClientRect();
+        const editorRect = this.richText.nativeElement.getBoundingClientRect();
+        const toolbarRect = this.quickToolbar.nativeElement.getBoundingClientRect();
+        console.log('rect', selectedRect);
+        let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
+        let newX = selectedRect.x;
+        if (newY < editorRect.y) {
+          newY = selectedRect.bottom + PADDING;
+        }
+
+        if (newX + toolbarRect.width > editorRect.right) {
+          newX = editorRect.right - toolbarRect.width - PADDING;
+        }
+
+
+
+        const x = newX - this.richText.nativeElement.getBoundingClientRect().x;
+        const y = newY - this.richText.nativeElement.getBoundingClientRect().y;
         quickToolbar.style.top = y + 'px';
         quickToolbar.style.left = x + 'px';
 
-        console.log('quickToolbar', quickToolbar);
       } else {
         // this.quickToolbar.nativeElement.style.opacity = '0';
         let quickToolbar = this.quickToolbar.nativeElement;
-        quickToolbar.style.opacity = '0';
-        quickToolbar.style.zIndex = "-1";
-
-
-      }
-      if (currentSelection !== this.previousSelection) {
-        currentSelection && this.selectionChanged.emit(currentSelection);
-        this.previousSelection = currentSelection;
+        quickToolbar.classList.remove('show');
+        quickToolbar.classList.add('hide');
+        if (currentSelection !== this.previousSelection) {
+          this.previousSelection = currentSelection;
+        }
       }
     }, 10);
 
   }
   onSelect(event: any) {
     const selectedText = window.getSelection()?.toString();
-    console.log(selectedText);
   }
   constructor(
     private elementRef: ElementRef<HTMLElement>,
