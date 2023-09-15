@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
-import { CommonModule } from '@angular/common'
+import { CommonModule } from '@angular/common';
+import { Editor, Transforms, createEditor, Element as SlateElement, Range, Descendant } from 'slate';
 @Component({
   selector: 'rte-root',
   templateUrl: './rte.component.html',
@@ -10,6 +11,8 @@ import { CommonModule } from '@angular/common'
 export class CdkRichTextEditorComponent {
 
   oDoc: any;
+
+  editor = createEditor();
 
   //Get div element to pass content to input
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
@@ -41,10 +44,27 @@ export class CdkRichTextEditorComponent {
 
   }
 
+  insertImage(url: string, width: number, height: number) {
+    this.oDoc?.focus();
+
+    let selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      let img = document.createElement('img');
+      img.src = url;
+      img.width = width;
+      img.height = height;
+
+      const range = selection.getRangeAt(0);
+      range.insertNode(img);
+
+    }
+
+
+
+  }
 
   addMark(format: any, value?: string) {
     this.oDoc = document.getElementById("textBox");
-    console.log('format', format);
 
     switch (format) {
       case "heading-one":
@@ -81,6 +101,7 @@ export class CdkRichTextEditorComponent {
     const selection = document.getSelection();
     if (selection) {
       const range = selection.getRangeAt(0);
+
       const code = document.createElement(tag);
       code.appendChild(range.extractContents());
 
@@ -98,26 +119,26 @@ export class CdkRichTextEditorComponent {
     const selection = window.getSelection();
     if (!selection?.anchorNode)
       return null;
-    // console.log('selection.anchorNode', selection.getRangeAt(0));
+    // ('selection.anchorNode', selection.getRangeAt(0));
     const anchorNode = selection.anchorNode;
     let element: Node | ChildNode | null = anchorNode;
 
     if (anchorNode instanceof Text) {
-      // console.log('textAnchor', selection.anchorOffset, textAnchor.textContent?.length);
+      // ('textAnchor', selection.anchorOffset, textAnchor.textContent?.length);
       if ((anchorNode as Text).textContent?.length == selection.anchorOffset) {
-        console.log("nextContainer");
+        ("nextContainer");
         element = anchorNode.nextSibling;
 
       } else {
-        console.log("anchorContainer");
+        ("anchorContainer");
         element = anchorNode.parentNode;
       }
     } else {
       if ((anchorNode as HTMLElement).childNodes.length == selection.anchorOffset) {
-        console.log("nextContainer");
+        ("nextContainer");
         element = anchorNode.nextSibling;
       } else {
-        console.log("anchorContainer");
+        ("anchorContainer");
       }
     }
     return element;
@@ -160,7 +181,6 @@ export class CdkRichTextEditorComponent {
 
   untagParent(node: ChildNode | Node | null, tag: string): void {
     let element = this.findParentWithTag(node, tag);
-    console.log('element', element);
     if (element && element instanceof HTMLElement) {
       const htmlElement = element as HTMLElement;
       let newElement = document.createElement('span');
@@ -200,7 +220,6 @@ export class CdkRichTextEditorComponent {
 
 
   toggleMark(format: any) {
-    console.log('format', format)
     if (!this.isMarkActive(format)) {
       this.addMark(format);
     } else {
@@ -219,7 +238,7 @@ export class CdkRichTextEditorComponent {
       currentSelection && this.selectionChanged.emit(currentSelection);
 
 
-      if (currentSelection && currentSelection?.toString() != '') {
+      if (currentSelection /* && currentSelection?.toString() != '' */) {
         let quickToolbar = this.quickToolbar.nativeElement;
         quickToolbar.classList.remove('hide');
         quickToolbar.classList.add('show');
@@ -228,7 +247,6 @@ export class CdkRichTextEditorComponent {
         const selectedRect = range.getBoundingClientRect();
         const editorRect = this.richText.nativeElement.getBoundingClientRect();
         const toolbarRect = this.quickToolbar.nativeElement.getBoundingClientRect();
-        console.log('rect', selectedRect);
         let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
         let newX = selectedRect.x;
         if (newY < editorRect.y) {

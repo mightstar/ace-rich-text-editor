@@ -8,6 +8,8 @@
     </div>
 
 </ng-template>
+<image-setting-dialog  *ngIf="showImageSetting" (btnClicked)="handleClickImageSetting($event)"></image-setting-dialog>
+
 
 <rte-root #editor [cdkQuickToolbar]="quick_toolbar" (cdkEditorSelectionChanged)="selectionChanged($event)">
 </rte-root>
