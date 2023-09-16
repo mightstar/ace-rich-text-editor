@@ -1,18 +1,7 @@
 import { Type, Component, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-@Component({
-  selector: 'app-dynamic-component',
-  template: `
-    <span>
-      <a href="#">Link ....<button>Click here</button></a>
-      <span cdkContent>
-        <ng-content></ng-content>
-      </span>
-</span>
-  `
-})
-export class DynamicComponent { }
+
 
 @Component({
   selector: 'rte-root',
@@ -240,7 +229,14 @@ export class CdkRichTextEditorComponent {
     }
   }
 
+  toggleComponent(componentName: Type<Component>) {
+    if (!this.isActiveComponent(componentName)) {
+      this.insertComponent(componentName);
 
+    } else {
+      this.removeComponent(componentName);
+    }
+  }
 
   insertComponent(componentName: Type<Component>) {
     const selection = window.getSelection();
@@ -248,19 +244,24 @@ export class CdkRichTextEditorComponent {
     if (selection && selection.anchorNode) {
       const componentFactory = this.componentFactoryResolver.resolveComponentFactory(componentName);
 
-      const componentRef = this.richTextContainer.createComponent(componentFactory);
-
+      const componentRef = this.richTextContainer.createComponent(componentFactory, undefined, undefined, [[selection.getRangeAt(0).extractContents()]]);
       console.log(componentRef.location);
 
       console.log(selection.anchorNode);
 
-      if (selection.anchorNode instanceof Text) {
-        (selection.anchorNode.parentElement)?.appendChild(componentRef.location.nativeElement);
+      // if (selection.anchorNode instanceof Text) {
+      //   (selection.anchorNode.parentElement)?.appendChild(componentRef.location.nativeElement);
 
-      } else {
-        (selection.anchorNode).appendChild(componentRef.location.nativeElement);
+      // } else {
+      //   (selection.anchorNode).appendChild(componentRef.location.nativeElement);
 
-      }
+      // }
+
+      const range = selection.getRangeAt(0);
+      
+      // code.appendChild(range.extractContents());
+
+      range.insertNode(componentRef.location.nativeElement);
 
     }
 
@@ -300,8 +301,6 @@ export class CdkRichTextEditorComponent {
     setTimeout(() => {
       const currentSelection = window.getSelection();
       currentSelection && this.selectionChanged.emit(currentSelection);
-
-      this.insertComponent(DynamicComponent);
 
       if (currentSelection /* && currentSelection?.toString() != '' */) {
         let quickToolbar = this.quickToolbar.nativeElement;

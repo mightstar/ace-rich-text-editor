@@ -14,6 +14,18 @@ export enum MarkTypes {
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 
+@Component({
+  selector: 'app-dynamic-component',
+  template: `
+    <span>
+      <a href="#">Link ....</a>
+      <span cdkContent>
+        <button><ng-content></ng-content></button>
+      </span>
+</span>
+  `
+})
+export class UnusualInlineComponent { }
 
 @Component({
   selector: 'app-demo-editor',
@@ -62,7 +74,7 @@ export class DemoEditorComponent {
     if (url)
       this.editor.insertImage(url, 500, 500);
 
-    
+
   }
 
   insertImage = (url: string, width: number, height: number) => {
@@ -81,6 +93,10 @@ export class DemoEditorComponent {
     }
 
 
+  }
+
+  toggleComponent = () => {
+    this.editor.toggleComponent(UnusualInlineComponent);
   }
 
   toolbarItems = [
@@ -143,6 +159,12 @@ export class DemoEditorComponent {
       icon: 'add_photo_alternate',
       active: true,
       action: this.handleClickAddImage
+    },
+    {
+      format: 'insert-link',
+      icon: 'link',
+      active: true,
+      action: this.toggleComponent,
     }
   ];
 
