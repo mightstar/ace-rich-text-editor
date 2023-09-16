@@ -1,4 +1,4 @@
-.quick-toolbar {
+.demo-quick-toolbar {
 
     background-color: cornsilk;
     padding: 5px;
@@ -21,7 +21,10 @@
     // margin-bottom: 20px;
 }
 
-
+.demo-editor {
+    width: 100%;
+    height: 500px;
+}
 
 @keyframes fadeIn {
     from {
@@ -31,30 +34,4 @@
     to {
         opacity: 1;
     }
-}
-
-.quick-toolbar.focus {
-    opacity: 1;
-}
-
-.quick-toolbar.not-focus {
-    opacity: 0.5;
-}
-
-.quick-toolbar li {
-    margin-right: 10px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 3px;
-
-}
-
-.quick-toolbar li.active {
-    background-color: dodgerblue;
-    color: white;
-}
-
-.quick-toolbar li:hover {
-    background-color: purple;
-    color: white;
 }

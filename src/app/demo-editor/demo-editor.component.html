@@ -1,15 +1,17 @@
 <p>demo-editor works!</p>
 <ng-template #quick_toolbar>
 
-    <div class="quick-toolbar">
+    <div class="demo-quick-toolbar">
         <demo-button *ngFor="let toolbarItem of toolbarItems" [active]="toolbarItem.active"
             (onMouseDown)="toolbarItem.action(toolbarItem.format)"><span class="material-icons">{{ toolbarItem.icon
                 }}</span></demo-button>
     </div>
 
 </ng-template>
-<image-setting-dialog  *ngIf="showImageSetting" (btnClicked)="handleClickImageSetting($event)"></image-setting-dialog>
+<image-setting-dialog *ngIf="showImageSetting" (btnClicked)="handleClickImageSetting($event)"></image-setting-dialog>
 
-
-<rte-root #editor [cdkQuickToolbar]="quick_toolbar" (cdkEditorSelectionChanged)="selectionChanged($event)">
-</rte-root>
+<div class="demo-editor">
+    <rte-root #editor [cdkQuickToolbar]="quick_toolbar" (cdkEditorSelectionChanged)="selectionChanged($event)">
+        <h1>Apache Superset</h1>
+    </rte-root>
+</div>

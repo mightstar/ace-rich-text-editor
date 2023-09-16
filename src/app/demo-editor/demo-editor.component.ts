@@ -62,7 +62,7 @@ export class DemoEditorComponent {
     if (url)
       this.editor.insertImage(url, 500, 500);
 
-
+    
   }
 
   insertImage = (url: string, width: number, height: number) => {
