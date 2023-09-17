@@ -38,7 +38,7 @@ export class ImageSettingDialog {
     width: number = 500;
     height: number = 500;
     handleClick(ev: MouseEvent, action: string) {
-        console.log('action', action);
+        
         ev.preventDefault();
         const settingInfo: ImageSettingInfo = { event: ev, action };
         if (action == 'add') {

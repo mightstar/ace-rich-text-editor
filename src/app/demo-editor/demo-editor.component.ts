@@ -17,12 +17,14 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 @Component({
   selector: 'app-dynamic-component',
   template: `
-    <span>
-      <a href="#">Link ....</a>
-      <span cdkContent>
-        <button><ng-content></ng-content></button>
-      </span>
-</span>
+    <span style="border: 1px solid grey">
+      <b>Unusual: </b>  
+      <a href="#">
+        <span cdkContent>
+          <ng-content></ng-content>
+        </span>
+      </a>
+    </span>
   `
 })
 export class UnusualInlineComponent { }
@@ -64,6 +66,8 @@ export class DemoEditorComponent {
 
       if (item.format == 'insert-image')
         item.active = true;
+      if (item.format == 'insert-unusual-inline')
+        item.active = this.isComponentActive();
     });
 
   }
@@ -95,9 +99,17 @@ export class DemoEditorComponent {
 
   }
 
+  isComponentActive = () => {
+    return this.editor.isActiveComponent(UnusualInlineComponent);
+  }
+
   toggleComponent = () => {
     this.editor.toggleComponent(UnusualInlineComponent);
+
+    this.updateToolbar();
   }
+
+
 
   toolbarItems = [
     {
@@ -161,9 +173,9 @@ export class DemoEditorComponent {
       action: this.handleClickAddImage
     },
     {
-      format: 'insert-link',
+      format: 'insert-unusual-inline',
       icon: 'link',
-      active: true,
+      active: false,
       action: this.toggleComponent,
     }
   ];

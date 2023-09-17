@@ -57,6 +57,8 @@ export class CdkRichTextEditorComponent {
 
   private _getSelectedNode(): Node | ChildNode | null {
     const selection = window.getSelection();
+
+
     if (!selection?.anchorNode)
       return null;
     // ('selection.anchorNode', selection.getRangeAt(0));
@@ -64,21 +66,20 @@ export class CdkRichTextEditorComponent {
     let element: Node | ChildNode | null = anchorNode;
 
     if (anchorNode instanceof Text) {
+
       // ('textAnchor', selection.anchorOffset, textAnchor.textContent?.length);
       if ((anchorNode as Text).textContent?.length == selection.anchorOffset) {
-        ("nextContainer");
         element = anchorNode.nextSibling;
 
       } else {
-        ("anchorContainer");
         element = anchorNode.parentNode;
+
+
       }
     } else {
       if ((anchorNode as HTMLElement).childNodes.length == selection.anchorOffset) {
-        ("nextContainer");
         element = anchorNode.nextSibling;
       } else {
-        ("anchorContainer");
       }
     }
     return element;
@@ -88,9 +89,8 @@ export class CdkRichTextEditorComponent {
     let element = this._findParentWithTag(node, tag);
     if (element && element instanceof HTMLElement) {
       const htmlElement = element as HTMLElement;
-      let newElement = document.createElement('span');
-      newElement.innerHTML = htmlElement.innerHTML;
-      htmlElement.replaceWith(newElement);
+      
+      htmlElement.replaceWith(...Array.from(htmlElement.childNodes));
 
     }
   }
@@ -120,6 +120,12 @@ export class CdkRichTextEditorComponent {
     }
 
     return null;
+  }
+
+  private _getSelectorName(componentName: Type<Component>): string {
+    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(componentName);
+    let selector = componentFactory.selector;
+    return selector;
   }
 
   toggleMark(format: any) {
@@ -212,16 +218,14 @@ export class CdkRichTextEditorComponent {
     }
   }
 
-
-
   insertImage(url: string, width: number, height: number) {
 
     let selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       let img = document.createElement('img');
       img.src = url;
-      img.width = width;
-      img.height = height;
+      // img.width = width;
+      // img.height = height;
 
       const range = selection.getRangeAt(0);
       range.insertNode(img);
@@ -245,35 +249,31 @@ export class CdkRichTextEditorComponent {
       const componentFactory = this.componentFactoryResolver.resolveComponentFactory(componentName);
 
       const componentRef = this.richTextContainer.createComponent(componentFactory, undefined, undefined, [[selection.getRangeAt(0).extractContents()]]);
-      console.log(componentRef.location);
-
-      console.log(selection.anchorNode);
-
-      // if (selection.anchorNode instanceof Text) {
-      //   (selection.anchorNode.parentElement)?.appendChild(componentRef.location.nativeElement);
-
-      // } else {
-      //   (selection.anchorNode).appendChild(componentRef.location.nativeElement);
-
-      // }
 
       const range = selection.getRangeAt(0);
-      
-      // code.appendChild(range.extractContents());
 
       range.insertNode(componentRef.location.nativeElement);
-
     }
-
-
   }
 
   removeComponent(componentName: Type<Component>) {
+    
+    let componentNode = this._findParentWithTag(this._getSelectedNode(), this._getSelectorName(componentName));
 
+    if (componentNode && componentNode instanceof HTMLElement) {
+      let componentElement: HTMLElement = componentNode;
+
+      const cdkContents = componentElement.querySelector('[cdkContent]')?.cloneNode(true);
+      
+      cdkContents && componentElement.replaceWith(...Array.from(cdkContents.childNodes));
+
+
+    }
   }
 
   isActiveComponent(componentName: Type<Component>): boolean {
-    return false;
+
+    return this._isChildOfTag(this._getSelectedNode(), this._getSelectorName(componentName));
   }
 
 
@@ -286,12 +286,9 @@ export class CdkRichTextEditorComponent {
     // const dynamicComponentFactory = this.componentFactoryResolver.resolveComponentFactory(DynamicComponent);
     // const dynamicComponentRef = createComponent(DynamicComponent, {hostElement: this.richText.nativeElement, environmentInjector: this.injector})
     // // dynamicComponentRef.instance = this.cdkContent.nativeElement.innerHTML;
-    // console.log(dynamicComponentRef);
+    // 
     // // this.richText.nativeElement.appendChild(dynamicComponentRef.instance)
-    // let componentFactory = this.componentFactoryResolver.resolveComponentFactory(CdkRichTextEditorComponent);
-
-    // let selector = componentFactory.componentType;
-    // console.log('selector', selector);
+    // 
 
 
     // this.previousSelection = window.getSelection();
