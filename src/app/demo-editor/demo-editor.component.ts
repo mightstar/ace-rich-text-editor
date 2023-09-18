@@ -4,6 +4,7 @@ import { CdkRichTextEditor } from 'projects/rich-text-editor/src/lib/rich-text-e
 import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
 import { DemoButtonComponent } from './demo-button.component';
 import { ImageSettingDialog, ImageSettingInfo } from './image-setting-dialog/image-setting-dialog.component';
+// import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -16,6 +17,7 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 
 @Component({
   selector: 'app-dynamic-component',
+  standalone: true,
   template: `
     <span style="border: 1px solid grey">
       <b>Unusual: </b>  
@@ -32,7 +34,8 @@ export class UnusualInlineComponent { }
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [CdkRichTextEditorComponent, DemoButtonComponent, ImageSettingDialog, CommonModule],
+  imports: [CdkRichTextEditorComponent, DemoButtonComponent, UnusualInlineComponent, ImageSettingDialog, CommonModule
+  ],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true
 })
@@ -109,7 +112,32 @@ export class DemoEditorComponent {
     this.updateToolbar();
   }
 
-
+  chartOptions = {
+    title: {
+      text: "Data Visualization Column Chart"
+    },
+    animationEnabled: true,
+    axisY: {
+      includeZero: true
+    },
+    data: [{
+      type: "column", //change type to bar, line, area, pie, etc
+      //indexLabel: "{y}", //Shows y value on all Data Points
+      indexLabelFontColor: "#5A5757",
+      dataPoints: [
+        { x: 10, y: 71 },
+        { x: 20, y: 55 },
+        { x: 30, y: 50 },
+        { x: 40, y: 65 },
+        { x: 50, y: 71 },
+        { x: 60, y: 92, indexLabel: "Highest\u2191" },
+        { x: 70, y: 68 },
+        { x: 80, y: 38, indexLabel: "Lowest\u2193" },
+        { x: 90, y: 54 },
+        { x: 100, y: 60 }
+      ]
+    }]
+  }
 
   toolbarItems = [
     {

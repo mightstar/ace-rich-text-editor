@@ -17,15 +17,22 @@ export class CdkRichTextEditorComponent {
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
+  @ViewChild('seggestionBox') suggestionBox!: ElementRef<HTMLElement>;
   // @ViewChild('cdkContent', { read: ViewContainerRef }) container!: ViewContainerRef;
 
   @Input('cdkQuickToolbar') quick_toolbar!: TemplateRef<any>;
   @Output('cdkEditorSelectionChanged') selectionChanged = new EventEmitter<Selection>();
 
   @ContentChildren('*') contents!: QueryList<ElementRef>;
-  private previousSelection!: Selection | null;
+
+  isSeggestionVisible: boolean = false;
+
+
 
   private _mapTagToComponent = new Map<string, Type<Component>>();
+
+
+  previousSelection!: Selection | null;
 
   /**
    * 
@@ -89,7 +96,7 @@ export class CdkRichTextEditorComponent {
     let element = this._findParentWithTag(node, tag);
     if (element && element instanceof HTMLElement) {
       const htmlElement = element as HTMLElement;
-      
+
       htmlElement.replaceWith(...Array.from(htmlElement.childNodes));
 
     }
@@ -257,14 +264,14 @@ export class CdkRichTextEditorComponent {
   }
 
   removeComponent(componentName: Type<Component>) {
-    
+
     let componentNode = this._findParentWithTag(this._getSelectedNode(), this._getSelectorName(componentName));
 
     if (componentNode && componentNode instanceof HTMLElement) {
       let componentElement: HTMLElement = componentNode;
 
       const cdkContents = componentElement.querySelector('[cdkContent]')?.cloneNode(true);
-      
+
       cdkContents && componentElement.replaceWith(...Array.from(cdkContents.childNodes));
 
 
@@ -276,8 +283,11 @@ export class CdkRichTextEditorComponent {
     return this._isChildOfTag(this._getSelectedNode(), this._getSelectorName(componentName));
   }
 
+  suggestionEnabled = true;
 
   onMouseDown = (event: MouseEvent) => {
+
+    this._showSuggestion(false);
 
     // create the component factory
 
@@ -295,6 +305,7 @@ export class CdkRichTextEditorComponent {
   }
 
   onMouseUp = (event: MouseEvent) => {
+
     setTimeout(() => {
       const currentSelection = window.getSelection();
       currentSelection && this.selectionChanged.emit(currentSelection);
@@ -310,6 +321,7 @@ export class CdkRichTextEditorComponent {
         const toolbarRect = this.quickToolbar.nativeElement.getBoundingClientRect();
         let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
         let newX = selectedRect.x;
+
         if (newY < editorRect.y) {
           newY = selectedRect.bottom + PADDING;
         }
@@ -322,6 +334,8 @@ export class CdkRichTextEditorComponent {
 
         const x = newX - this.richText.nativeElement.getBoundingClientRect().x;
         const y = newY - this.richText.nativeElement.getBoundingClientRect().y;
+
+
         quickToolbar.style.top = y + 'px';
         quickToolbar.style.left = x + 'px';
 
@@ -337,6 +351,157 @@ export class CdkRichTextEditorComponent {
     }, 10);
 
   }
+  private _isSuggestionVisible = () => {
+    return this.suggestionEnabled && this.isSeggestionVisible;
+  }
+
+  private _showSuggestion = (visible: boolean) => {
+    console.log("_showSuggestion", visible);
+    if (!this.suggestionEnabled)
+      return;
+
+    if (!visible) {
+      this.isSeggestionVisible = visible;
+      this.suggestionBox.nativeElement.classList.toggle('show', false);
+      return;
+    }
+
+
+    const selection = window.getSelection();
+    if (selection) {
+      if (selection.isCollapsed) {
+        this.suggestionKeySelected = "";
+
+        this.isSeggestionVisible = visible;
+
+        const rect = selection.getRangeAt(0).getBoundingClientRect();
+        const editorRect = this.richText.nativeElement.getBoundingClientRect();
+        console.log('rect', rect);
+
+        this.suggestionBox.nativeElement.style.top = "" + (rect.bottom - editorRect.top) + "px";
+        this.suggestionBox.nativeElement.style.left = "" + (rect.right - editorRect.x) + "px";
+        this.suggestionBox.nativeElement.classList.toggle('show', true);
+
+      }
+    }
+  }
+
+  suggestions = [
+    { key: "hello", value: "Hello World" },
+    { key: "student", value: "student" },
+    { key: "love", value: "love" },
+    { key: "name", value: "name" },
+  ];
+
+  suggestionKeySelected: string = "";
+
+  onKeyDown = (event: KeyboardEvent) => {
+
+    
+    if (event.key == '@') {
+      this._showSuggestion(true);
+    }
+
+    if (event.key == 'ArrowLeft' || event.key == 'ArrowRight') {
+      if (this._isSuggestionVisible())
+        this._showSuggestion(false);
+    }
+
+    if (event.key == 'ArrowDown') {
+      if (this._isSuggestionVisible()) {
+
+        event.preventDefault();
+
+        this._moveSelected(1);
+      }
+    }
+
+    if (event.key == 'ArrowUp') {
+      if (this._isSuggestionVisible()) {
+
+        event.preventDefault();
+
+        this._moveSelected(-1);
+      }
+    }
+
+    if (event.key == 'Enter') {
+      if (this._isSuggestionVisible()) {
+        event.preventDefault();
+
+        this._enterSuggestion();
+      }
+    }
+
+
+
+
+
+
+  }
+
+  private _moveSelected = (step: number) => {
+    let currentIndex = this.suggestions.findIndex((item) => { return item.key == this.suggestionKeySelected });
+
+
+    let newIndex = currentIndex == -1 ? 0 : currentIndex + step;
+
+    newIndex = (newIndex + this.suggestions.length) % this.suggestions.length;
+
+    this.suggestionKeySelected = this.suggestions[newIndex].key; 
+  }
+
+
+  private _enterSuggestion = () => {
+
+    this._showSuggestion(false);
+    const currentIndex = this.suggestions.findIndex((item) => item.key == this.suggestionKeySelected);
+
+    if (currentIndex < 0 || currentIndex >= this.suggestions.length)
+    {
+      return;
+    }
+
+    const selection  = window.getSelection();
+
+    if (!selection) {
+      return ;
+    } else {
+      const focusNode = selection.focusNode;
+
+      if (focusNode && focusNode instanceof Text) {
+        let text = focusNode.textContent;
+        let startIndex = 0;
+        let endIndex = startIndex;
+        if (text && (startIndex = text?.slice(0, selection.focusOffset)?.lastIndexOf('@')) >= 0 ) {
+          
+          text = text.slice(0,startIndex) + this.suggestions[currentIndex].value + text.slice(selection.focusOffset);
+          endIndex = startIndex + this.suggestions[currentIndex].value.length;
+        }
+
+        focusNode.textContent = text;
+
+       
+
+        const range = document.createRange();
+        range.selectNodeContents(focusNode);
+        range.setStart(focusNode, startIndex);
+        range.setEnd(focusNode, endIndex);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        this._wrapInlineTag('b');
+
+      }
+
+    }
+
+
+  }
+
+
+
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,

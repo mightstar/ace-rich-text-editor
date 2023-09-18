@@ -4,9 +4,16 @@
   <div #quickToolbar class="rte-quick-toolbar">
     <ng-container *ngTemplateOutlet="quick_toolbar"></ng-container>
   </div>
+
+  <div #seggestionBox class="rte-suggestion-box">
+    <ul>
+      <li *ngFor="let suggestion of suggestions" [class.selected]="suggestion.key == suggestionKeySelected">{{suggestion.key}}</li>
+      
+
+    </ul>
+  </div>
   <div>
-    <div #richText class="rte-text-editor" id="textBox" contenteditable="true" (mousedown)="onMouseDown($event)"
-      (mouseup)="onMouseUp($event)">
+    <div #richText class="rte-text-editor" id="textBox" contenteditable="true" (mousedown)="onMouseDown($event)" (keydown)="onKeyDown($event)" (mouseup)="onMouseUp($event)">
       <span cdkContent><ng-content></ng-content></span>
     </div>
   </div>
