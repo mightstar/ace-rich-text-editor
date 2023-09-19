@@ -1,36 +1,53 @@
-import { Type, Component, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent } from '@angular/core';
+import { Type, Component, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent, EmbeddedViewRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion.component';
+import { isRectEmpty } from '../utils/DOM';
 
-
+export interface CdkSuggestionSetting {
+  trigger: string,
+  itemTemplate: TemplateRef<any>,
+  inputTemplate: TemplateRef<any>,
+  queryFilter: (query: string, key: string) => boolean,
+  data: CdkSuggestionItem[]
+}
 
 @Component({
   selector: 'rte-root',
   templateUrl: './rte.component.html',
   styleUrls: ['./rte.component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, CdkSuggestionComponent],
   standalone: true
 })
 export class CdkRichTextEditorComponent {
 
-
-  //Get div element to pass content to input
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
-  @ViewChild('seggestionBox') suggestionBox!: ElementRef<HTMLElement>;
-  // @ViewChild('cdkContent', { read: ViewContainerRef }) container!: ViewContainerRef;
+  @ViewChild('suggestion') suggestion!: CdkSuggestionComponent;
 
-  @Input('cdkQuickToolbar') quick_toolbar!: TemplateRef<any>;
-  @Output('cdkEditorSelectionChanged') selectionChanged = new EventEmitter<Selection>();
 
-  @ContentChildren('*') contents!: QueryList<ElementRef>;
+
+  @Input('cdkQuickToolbar')
+  quick_toolbar!: TemplateRef<any>;
+
+  @Input('cdkSuggestions')
+  suggestionList: CdkSuggestionSetting[] = [];
+
+  suggestionInputTemplate!: TemplateRef<any>;
+
+  @Input('cdkSuggestionEnabled')
+  suggestionEnabled: boolean = true;
+
+
+
+
+  @Output('cdkEditorSelectionChanged')
+  selectionChanged = new EventEmitter<Selection>();
+
+
+
 
   isSeggestionVisible: boolean = false;
-
-
-
-  private _mapTagToComponent = new Map<string, Type<Component>>();
-
 
   previousSelection!: Selection | null;
 
@@ -133,6 +150,67 @@ export class CdkRichTextEditorComponent {
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(componentName);
     let selector = componentFactory.selector;
     return selector;
+  }
+
+  private _enterSuggestion = (item: CdkSuggestionItem, triggerIndex: number) => {
+    const selection = window.getSelection();
+    const startedNode = this.suggestion.startedNode;
+    const startedOffset = this.suggestion.startedOffset;
+    if (selection && startedNode) {
+
+      const focusNode = selection.focusNode;
+
+      if (focusNode && focusNode instanceof Text && focusNode == startedNode) {
+        let text = focusNode.textContent;
+        let startIndex = 0;
+
+        if (text && (startIndex = startedOffset - 1) >= 0) {
+          text = text.slice(0, startIndex) + text.slice(selection.focusOffset);
+        }
+
+
+        focusNode.textContent = text;
+
+        const range = document.createRange();
+
+        const documentFragment = document.createDocumentFragment();
+
+        const viewRef: EmbeddedViewRef<Node> = this.suggestionList[triggerIndex].inputTemplate.createEmbeddedView({ value: item.value });
+
+
+        this.richTextContainer.insert(viewRef);
+        for (let node of viewRef.rootNodes) {
+          documentFragment.appendChild(node);
+
+        }
+
+
+        range.selectNodeContents(focusNode);
+        range.setStart(focusNode, startIndex);
+        range.setEnd(focusNode, startIndex);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        range.insertNode(documentFragment);
+
+        range.collapse();
+      }
+
+    }
+    this.suggestion.show(false);
+
+  }
+
+  private _focusElementAfterSuggestion(element: HTMLElement) {
+    if (document.activeElement !== element) {
+
+      element.focus();
+
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      this.suggestion.currentRange && selection?.addRange(this.suggestion.currentRange);
+    }
   }
 
   toggleMark(format: any) {
@@ -272,8 +350,10 @@ export class CdkRichTextEditorComponent {
 
       const cdkContents = componentElement.querySelector('[cdkContent]')?.cloneNode(true);
 
-      cdkContents && componentElement.replaceWith(...Array.from(cdkContents.childNodes));
-
+      if (cdkContents)
+        componentElement.replaceWith(...Array.from(cdkContents.childNodes));
+      else
+        componentElement.remove();
 
     }
   }
@@ -283,42 +363,31 @@ export class CdkRichTextEditorComponent {
     return this._isChildOfTag(this._getSelectedNode(), this._getSelectorName(componentName));
   }
 
-  suggestionEnabled = true;
 
   onMouseDown = (event: MouseEvent) => {
-
-    this._showSuggestion(false);
-
-    // create the component factory
-
-    // pass some data to the component
-    // componentRef.instance.index = this._counter++;
-    // const dynamicComponentFactory = this.componentFactoryResolver.resolveComponentFactory(DynamicComponent);
-    // const dynamicComponentRef = createComponent(DynamicComponent, {hostElement: this.richText.nativeElement, environmentInjector: this.injector})
-    // // dynamicComponentRef.instance = this.cdkContent.nativeElement.innerHTML;
-    // 
-    // // this.richText.nativeElement.appendChild(dynamicComponentRef.instance)
-    // 
-
-
-    // this.previousSelection = window.getSelection();
+    if (this.suggestionEnabled)
+      this.suggestion.onMouseDown(event);
   }
 
   onMouseUp = (event: MouseEvent) => {
-
     setTimeout(() => {
       const currentSelection = window.getSelection();
       currentSelection && this.selectionChanged.emit(currentSelection);
 
-      if (currentSelection /* && currentSelection?.toString() != '' */) {
+      if (currentSelection && currentSelection?.toString() != '') {
         let quickToolbar = this.quickToolbar.nativeElement;
-        quickToolbar.classList.remove('hide');
-        quickToolbar.classList.add('show');
+
+        quickToolbar.classList.toggle('show', true);
         const PADDING = 10;
         const range = currentSelection.getRangeAt(0);
-        const selectedRect = range.getBoundingClientRect();
+        let selectedRect = range.getBoundingClientRect();
+
         const editorRect = this.richText.nativeElement.getBoundingClientRect();
         const toolbarRect = this.quickToolbar.nativeElement.getBoundingClientRect();
+
+        if (isRectEmpty(selectedRect)) {
+          selectedRect = (range.startContainer as Element).getBoundingClientRect();
+        }
         let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
         let newX = selectedRect.x;
 
@@ -340,163 +409,44 @@ export class CdkRichTextEditorComponent {
         quickToolbar.style.left = x + 'px';
 
       } else {
-        // this.quickToolbar.nativeElement.style.opacity = '0';
         let quickToolbar = this.quickToolbar.nativeElement;
-        quickToolbar.classList.remove('show');
-        quickToolbar.classList.add('hide');
-        if (currentSelection !== this.previousSelection) {
-          this.previousSelection = currentSelection;
-        }
+        quickToolbar.classList.toggle('show', false);
       }
     }, 10);
 
   }
-  private _isSuggestionVisible = () => {
-    return this.suggestionEnabled && this.isSeggestionVisible;
-  }
-
-  private _showSuggestion = (visible: boolean) => {
-    console.log("_showSuggestion", visible);
-    if (!this.suggestionEnabled)
-      return;
-
-    if (!visible) {
-      this.isSeggestionVisible = visible;
-      this.suggestionBox.nativeElement.classList.toggle('show', false);
-      return;
-    }
-
-
-    const selection = window.getSelection();
-    if (selection) {
-      if (selection.isCollapsed) {
-        this.suggestionKeySelected = "";
-
-        this.isSeggestionVisible = visible;
-
-        const rect = selection.getRangeAt(0).getBoundingClientRect();
-        const editorRect = this.richText.nativeElement.getBoundingClientRect();
-        console.log('rect', rect);
-
-        this.suggestionBox.nativeElement.style.top = "" + (rect.bottom - editorRect.top) + "px";
-        this.suggestionBox.nativeElement.style.left = "" + (rect.right - editorRect.x) + "px";
-        this.suggestionBox.nativeElement.classList.toggle('show', true);
-
-      }
-    }
-  }
-
-  suggestions = [
-    { key: "hello", value: "Hello World" },
-    { key: "student", value: "student" },
-    { key: "love", value: "love" },
-    { key: "name", value: "name" },
-  ];
-
-  suggestionKeySelected: string = "";
 
   onKeyDown = (event: KeyboardEvent) => {
 
-    
-    if (event.key == '@') {
-      this._showSuggestion(true);
+    if (this.suggestionEnabled) {
+      this.suggestion.onKeyDown(event);
     }
+  }
 
-    if (event.key == 'ArrowLeft' || event.key == 'ArrowRight') {
-      if (this._isSuggestionVisible())
-        this._showSuggestion(false);
-    }
-
-    if (event.key == 'ArrowDown') {
-      if (this._isSuggestionVisible()) {
-
-        event.preventDefault();
-
-        this._moveSelected(1);
-      }
-    }
-
-    if (event.key == 'ArrowUp') {
-      if (this._isSuggestionVisible()) {
-
-        event.preventDefault();
-
-        this._moveSelected(-1);
-      }
-    }
-
-    if (event.key == 'Enter') {
-      if (this._isSuggestionVisible()) {
-        event.preventDefault();
-
-        this._enterSuggestion();
-      }
-    }
-
-
-
+  onFocusIn = () => {
 
 
 
   }
 
-  private _moveSelected = (step: number) => {
-    let currentIndex = this.suggestions.findIndex((item) => { return item.key == this.suggestionKeySelected });
+  onFocusOut() {
 
 
-    let newIndex = currentIndex == -1 ? 0 : currentIndex + step;
+    // this.suggestion.show(false);
 
-    newIndex = (newIndex + this.suggestions.length) % this.suggestions.length;
-
-    this.suggestionKeySelected = this.suggestions[newIndex].key; 
   }
 
+  onValueChange = (event: Event) => {
+    if (this.suggestionEnabled)
+      this.suggestion.onValueChange(event);
+  }
 
-  private _enterSuggestion = () => {
+  onSuggestionSelected = (event: CdkSuggestionSelect) => {
+    if (this.suggestionEnabled) {
+      this._focusElementAfterSuggestion(this.richText.nativeElement);
 
-    this._showSuggestion(false);
-    const currentIndex = this.suggestions.findIndex((item) => item.key == this.suggestionKeySelected);
-
-    if (currentIndex < 0 || currentIndex >= this.suggestions.length)
-    {
-      return;
+      this._enterSuggestion(event.item, event.triggerIndex);
     }
-
-    const selection  = window.getSelection();
-
-    if (!selection) {
-      return ;
-    } else {
-      const focusNode = selection.focusNode;
-
-      if (focusNode && focusNode instanceof Text) {
-        let text = focusNode.textContent;
-        let startIndex = 0;
-        let endIndex = startIndex;
-        if (text && (startIndex = text?.slice(0, selection.focusOffset)?.lastIndexOf('@')) >= 0 ) {
-          
-          text = text.slice(0,startIndex) + this.suggestions[currentIndex].value + text.slice(selection.focusOffset);
-          endIndex = startIndex + this.suggestions[currentIndex].value.length;
-        }
-
-        focusNode.textContent = text;
-
-       
-
-        const range = document.createRange();
-        range.selectNodeContents(focusNode);
-        range.setStart(focusNode, startIndex);
-        range.setEnd(focusNode, endIndex);
-
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        this._wrapInlineTag('b');
-
-      }
-
-    }
-
 
   }
 

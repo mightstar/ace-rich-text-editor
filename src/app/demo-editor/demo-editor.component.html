@@ -8,10 +8,35 @@
     </div>
 
 </ng-template>
+
+<ng-template #suggestionItemTemplate let-value let-active="active">
+    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
+    </div>
+</ng-template>
+
+<ng-template #suggestionInputTemplate let-value="value">
+    <span contenteditable="false" class="demo-mention-view"><b>@{{value}}</b>
+    </span>
+</ng-template>
+
+<ng-template #hashtagItemTemplate let-value let-active="active">
+    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
+    </div>
+</ng-template>
+
+<ng-template #hashtagInputTemplate let-value="value">
+
+    <app-hashtag>
+        #{{value}}
+    </app-hashtag>
+</ng-template>
+
+
 <image-setting-dialog *ngIf="showImageSetting" (btnClicked)="handleClickImageSetting($event)"></image-setting-dialog>
 
 <div class="demo-editor">
-    <rte-root #editor [cdkQuickToolbar]="quick_toolbar" (cdkEditorSelectionChanged)="selectionChanged($event)">
+    <rte-root #editor [cdkQuickToolbar]="quick_toolbar" [cdkSuggestionEnabled]="suggestionEnabled"
+        [cdkSuggestions]="suggestions" (cdkEditorSelectionChanged)="selectionChanged($event)">
         <h1>Apache Superset</h1>
         Normal Text<br>
         <b>Bold Text</b><br>
@@ -34,10 +59,5 @@
         <app-dynamic-component>
             Link
         </app-dynamic-component>
-        <!-- <br/>
-        <br/>
-        <img id="rimg_3" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8sYG-xi0wJlmPTj7R3_V9O5XJmmYHf7Qf2A&usqp=CAU" /> -->
-        <!-- <h1>This is an example of Apache Superset Chart example</h1> -->
-        <!-- <canvasjs-chart [options]="chartOptions" [styles]="{width: '100%', height:'360px'}"></canvasjs-chart>   -->
     </rte-root>
 </div>

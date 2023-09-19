@@ -1,10 +1,11 @@
 import { Component, ViewChild, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkRichTextEditor } from 'projects/rich-text-editor/src/lib/rich-text-editor';
-import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
+import { CdkRichTextEditorComponent, CdkSuggestionSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
 import { DemoButtonComponent } from './demo-button.component';
 import { ImageSettingDialog, ImageSettingInfo } from './image-setting-dialog/image-setting-dialog.component';
-// import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
+import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion.component';
+import { HashtagComponent } from './hashtag/hashtag.component';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -21,7 +22,7 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
   template: `
     <span style="border: 1px solid grey">
       <b>Unusual: </b>  
-      <a href="#">
+      <a href="#" onClick="window.alert('hashtag');">
         <span cdkContent>
           <ng-content></ng-content>
         </span>
@@ -31,11 +32,12 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 })
 export class UnusualInlineComponent { }
 
+
+
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [CdkRichTextEditorComponent, DemoButtonComponent, UnusualInlineComponent, ImageSettingDialog, CommonModule
-  ],
+  imports: [CdkRichTextEditorComponent, DemoButtonComponent,HashtagComponent, UnusualInlineComponent, ImageSettingDialog, CommonModule],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true
 })
@@ -45,6 +47,18 @@ export class DemoEditorComponent {
 
   @ViewChild('editor', { read: CdkRichTextEditorComponent, static: true })
   editor!: CdkRichTextEditorComponent;
+
+  @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true })
+  suggestionItemTemplate!: TemplateRef<any>;
+
+  @ViewChild('suggestionInputTemplate', { read: TemplateRef, static: true })
+  suggestionInputTemplate!: TemplateRef<any>;
+
+  @ViewChild('hashtagItemTemplate', { read: TemplateRef, static: true })
+  hashtagItemTemplate!: TemplateRef<any>;
+
+  @ViewChild('hashtagInputTemplate', { read: TemplateRef, static: true })
+  hashtagInputTemplate!: TemplateRef<any>;
 
   showImageSetting: boolean = false;
 
@@ -112,32 +126,52 @@ export class DemoEditorComponent {
     this.updateToolbar();
   }
 
-  chartOptions = {
-    title: {
-      text: "Data Visualization Column Chart"
-    },
-    animationEnabled: true,
-    axisY: {
-      includeZero: true
-    },
-    data: [{
-      type: "column", //change type to bar, line, area, pie, etc
-      //indexLabel: "{y}", //Shows y value on all Data Points
-      indexLabelFontColor: "#5A5757",
-      dataPoints: [
-        { x: 10, y: 71 },
-        { x: 20, y: 55 },
-        { x: 30, y: 50 },
-        { x: 40, y: 65 },
-        { x: 50, y: 71 },
-        { x: 60, y: 92, indexLabel: "Highest\u2191" },
-        { x: 70, y: 68 },
-        { x: 80, y: 38, indexLabel: "Lowest\u2193" },
-        { x: 90, y: 54 },
-        { x: 100, y: 60 }
-      ]
-    }]
+  filter = (query: string, key: string) => {
+    return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
   }
+
+  ngAfterContentChecked() {
+    this.suggestions = [
+      {
+        trigger: "@",
+        itemTemplate: this.suggestionItemTemplate,
+        inputTemplate: this.suggestionInputTemplate,
+        data: [{
+          key: "Jane Eyre", value: "Jane Eyre"
+        },
+        {
+          key: "William Shakespeare", value: "William Shakespeare"
+        },
+        {
+          key: "John Smith", value: "John Smith"
+        },],
+        queryFilter: this.filter
+      },
+      {
+        trigger: "#",
+        itemTemplate: this.hashtagItemTemplate,
+        inputTemplate: this.hashtagInputTemplate,
+        data: [{
+          key: "Red", value: "Red"
+        },
+        {
+          key: "Green", value: "Green"
+
+        },
+        {
+          key: "Blue", value: "Blue"
+
+        },],
+        queryFilter: this.filter
+      }
+    ];
+  }
+
+  suggestions: CdkSuggestionSetting[] = [
+ 
+  ];
+
+  suggestionEnabled = true;
 
   toolbarItems = [
     {

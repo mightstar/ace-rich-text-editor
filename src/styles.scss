@@ -16,3 +16,18 @@ code {
     
     padding: 3px;
 }
+.suggestion-item {
+    padding: 2px;
+    cursor: pointer;
+}
+
+.suggestion-item.selected {
+    background-color: #a1273b;
+    color: white;
+}
+
+.suggestion-item:hover {
+    background-color: dodgerblue;
+    color: white;
+    border-radius: 2px;
+}

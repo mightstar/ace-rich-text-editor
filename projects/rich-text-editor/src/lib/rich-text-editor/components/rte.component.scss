@@ -3,50 +3,6 @@
     width: 100%;
 }
 
-.rte-suggestion-box {
-    position: absolute;
-    top: 0;
-    z-index: -1;
-    opacity: 0;
-    padding: 3px;
-    border-radius: 2px;
-    border: 1px solid whitesmoke;
-    background-color: aliceblue;
-    
-}
-.rte-suggestion-box ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-.rte-suggestion-box ul > li {
-    padding: 2px;
-    cursor: pointer;
-}
-
-.rte-suggestion-box ul > li.selected {
-    background-color: pink;
-    color: white;
-}
-
-.rte-suggestion-box ul > li:hover {
-    background-color: dodgerblue;
-    color: white;
-    border-radius: 2px;
-}
-
-.rte-suggestion-box.show {
-    
-    z-index: 2;
-    opacity: 1;
-}
-
-.rte-suggestion-box.hide {
-    
-    z-index: -1;
-    opacity: 0;
-}
-
 
 
 
@@ -63,10 +19,7 @@
     z-index: 5;
 }
 
-.rte-quick-toolbar.hide {
-    opacity: 0;
-    z-index: -1;
-}
+
 
 .rte-quick-toolbar.show:hover {
     // background-color: red;

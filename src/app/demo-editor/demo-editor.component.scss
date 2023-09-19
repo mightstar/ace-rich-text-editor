@@ -26,6 +26,27 @@
     height: 500px;
 }
 
+.demo-mention-view {
+    display: inline-block;
+    white-space: nowrap;
+    line-height: 22px;
+    color: #666;
+    background: #eee;
+    padding: 0px 10px;
+    border-radius: 2em;
+    border: 1px solid var(--color-topic-tag-border, transparent);
+    margin: 0 1px;
+    &.focus {
+        box-shadow: 0 0 0 2px #b4d5ff;
+    }
+    &:hover {
+        border-color: aqua;
+    }
+    cursor: pointer;
+}
+
+
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -35,3 +56,5 @@
         opacity: 1;
     }
 }
+
+
