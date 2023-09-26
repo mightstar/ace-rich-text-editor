@@ -6,16 +6,20 @@
   <div #quickToolbar class="rte-quick-toolbar">
     <ng-container *ngTemplateOutlet="quick_toolbar"></ng-container>
   </div>
-
+  <div *ngIf="isUploading" class="rte-uploading-progress">
+    <app-circular-progress />
+  </div>
   <rte-suggestion #suggestion [cdkSuggestionList]="suggestionList" 
     (cdkSuggestionSelected)="onSuggestionSelected($event)">
   </rte-suggestion>
-  
+
   <div>
-    <div #richText class="rte-text-editor" id="textBox" contenteditable="true" (mousedown)="onMouseDown($event)"
+    <div #richText class="rte-text-editor" id="textBox" [contentEditable]="true" (mousedown)="onMouseDown($event)"
       (focus)="onFocusIn()" (blur)="onFocusOut()" (keydown)="onKeyDown($event)" (mouseup)="onMouseUp($event)"
-      (input)="onValueChange($event)">
-      <span cdkContent><ng-content></ng-content></span>
+      (input)="onValueChange($event)"
+      (drop)="onDrop($event)"
+      (paste)="onPaste($event)">
+      <ng-content></ng-content>
     </div>
   </div>
 

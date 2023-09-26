@@ -1,11 +1,16 @@
 import { Component, ViewChild, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkRichTextEditor } from 'projects/rich-text-editor/src/lib/rich-text-editor';
 import { CdkRichTextEditorComponent, CdkSuggestionSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
 import { DemoButtonComponent } from './demo-button.component';
 import { ImageSettingDialog, ImageSettingInfo } from './image-setting-dialog/image-setting-dialog.component';
 import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion.component';
 import { HashtagComponent } from './hashtag/hashtag.component';
+import { FormsModule } from '@angular/forms';
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+
+import { HttpClientModule } from '@angular/common/http';
+import { CustomEmbedComponent } from './custom-embed.component';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -34,16 +39,30 @@ export class UnusualInlineComponent { }
 
 
 
+
+
+@Pipe({name: 'SafeURL', standalone: true})
+export class SafeUrlPipe implements PipeTransform {
+    constructor(private sanitizer: DomSanitizer) {
+    }
+
+    public transform(url: string) {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    }
+}
+
+
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [CdkRichTextEditorComponent, DemoButtonComponent,HashtagComponent, UnusualInlineComponent, ImageSettingDialog, CommonModule],
+  imports: [ SafeUrlPipe, CdkRichTextEditorComponent, HttpClientModule, DemoButtonComponent,HashtagComponent, UnusualInlineComponent, ImageSettingDialog,FormsModule, CommonModule, CustomEmbedComponent],
   styleUrls: ['./demo-editor.component.scss'],
-  standalone: true
+  standalone: true,
+
 })
 export class DemoEditorComponent {
-  @ViewChild('quick_toolbar', { read: TemplateRef, static: true })
-  quick_toolbar!: TemplateRef<any>;
+  // @ViewChild('quick_toolbar', { read: TemplateRef, static: true })
+  // quick_toolbar!: TemplateRef<any>;
 
   @ViewChild('editor', { read: CdkRichTextEditorComponent, static: true })
   editor!: CdkRichTextEditorComponent;
@@ -87,6 +106,8 @@ export class DemoEditorComponent {
         item.active = this.isComponentActive();
     });
 
+    
+
   }
 
   handleClickAddImage = () => {
@@ -104,16 +125,9 @@ export class DemoEditorComponent {
 
   }
 
-  handleClickImageSetting = (ev: ImageSettingInfo) => {
-    this.showImageSetting = false;
-    if (ev.action == 'add') {
-      let setting = ev.setting;
-      if (setting) {
-        this.insertImage(setting.url, setting.width, setting.height);
-      }
-    }
+  handleContent = (content : string) => {
 
-
+    this.embedContent = content;
   }
 
   isComponentActive = () => {
@@ -242,7 +256,10 @@ export class DemoEditorComponent {
     }
   ];
 
+  embed_url = "https://richtexteditor.com/Demos/drag-and-drop-images.aspx";
 
+  embedContent = "";
 
+  
 
 }

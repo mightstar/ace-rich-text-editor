@@ -1,7 +1,10 @@
-import { Type, Component, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent, EmbeddedViewRef } from '@angular/core';
+import { Type, Component, HostListener, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent, EmbeddedViewRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion.component';
-import { isRectEmpty } from '../utils/DOM';
+import { isRectEmpty, focusElementWithRangeIfNotFocused, focusElementWithRange, getRangeFromPosition } from '../utils/DOM';
+import { loadImage } from '../utils/image';
+import { CircularProgressComponent } from './circular-progressive.component';
+import { HttpClient } from '@angular/common/http';
 
 export interface CdkSuggestionSetting {
   trigger: string,
@@ -10,12 +13,30 @@ export interface CdkSuggestionSetting {
   queryFilter: (query: string, key: string) => boolean,
   data: CdkSuggestionItem[]
 }
+type EditAction = 'insert' | 'remove' | 'copy' | 'cut' | 'paste' | 'drop';
+type ContentType = 'component' | 'image' | 'format' | 'tag' | 'plaintext' | 'template';
+
+export interface CdkSelection {
+  startContainerPath: number[],
+  startOffest: number,
+  endContainerPath: number[],
+  endOffset: number,
+  selectionContent?: DocumentFragment
+}
+
+export interface CdkEditAction {
+  action: EditAction,
+  previousState: CdkSelection,
+  currentState: CdkSelection,
+  contentType: ContentType, // component | image | format | tag | plainText | template
+  content: any
+}
 
 @Component({
   selector: 'rte-root',
   templateUrl: './rte.component.html',
   styleUrls: ['./rte.component.scss'],
-  imports: [CommonModule, CdkSuggestionComponent],
+  imports: [CommonModule, CdkSuggestionComponent, CircularProgressComponent],
   standalone: true
 })
 export class CdkRichTextEditorComponent {
@@ -33,23 +54,23 @@ export class CdkRichTextEditorComponent {
   @Input('cdkSuggestions')
   suggestionList: CdkSuggestionSetting[] = [];
 
-  suggestionInputTemplate!: TemplateRef<any>;
-
   @Input('cdkSuggestionEnabled')
   suggestionEnabled: boolean = true;
 
-
-
+  @Input('cdkImageUploadUrl')
+  imageUploadUrl: string = "";
 
   @Output('cdkEditorSelectionChanged')
   selectionChanged = new EventEmitter<Selection>();
 
-
-
+  @Output('cdkContentChanged')
+  contentChanged = new EventEmitter<string>();
 
   isSeggestionVisible: boolean = false;
 
-  previousSelection!: Selection | null;
+  isUploading = false;
+
+  suggestionInputTemplate!: TemplateRef<any>;
 
   /**
    * 
@@ -146,6 +167,47 @@ export class CdkRichTextEditorComponent {
     return null;
   }
 
+  private _getPathFromNode(node: Node | ChildNode | Text | null): number[] {
+    let path: number[] = [];
+
+
+    while (node && node !== this.richText.nativeElement) {
+
+      let parent = node.parentElement;
+      path.push(Array.prototype.indexOf.call(parent, node));
+
+      node = parent;
+    }
+    if (node == this.richText.nativeElement) {
+      path = [];
+    }
+
+    return path;
+
+  }
+
+  private _getNodeFromPath(path: number[]): Node | null {
+
+    let i = 0;
+    let node: Node = this.richText.nativeElement;
+
+    if (path.length == 0)
+      return null;
+    for (i = path.length - 1; i >= 0; i--) {
+      if (path[i] == -1 && node.childNodes.length <= path[i]) {
+        return null;
+      }
+      node = node.childNodes[path[i]];
+
+      if (node == null)
+        return null;
+    }
+
+    return node;
+
+
+  }
+
   private _getSelectorName(componentName: Type<Component>): string {
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(componentName);
     let selector = componentFactory.selector;
@@ -161,6 +223,7 @@ export class CdkRichTextEditorComponent {
       const focusNode = selection.focusNode;
 
       if (focusNode && focusNode instanceof Text && focusNode == startedNode) {
+
         let text = focusNode.textContent;
         let startIndex = 0;
 
@@ -193,8 +256,11 @@ export class CdkRichTextEditorComponent {
         selection.addRange(range);
 
         range.insertNode(documentFragment);
+        setTimeout(() => this._contentChanged(), 0);
+        // this._contentChanged();
 
         range.collapse();
+
       }
 
     }
@@ -202,16 +268,78 @@ export class CdkRichTextEditorComponent {
 
   }
 
-  private _focusElementAfterSuggestion(element: HTMLElement) {
-    if (document.activeElement !== element) {
 
-      element.focus();
+  private _contentChanged = () => {
+    this.contentChanged.emit(this.richText.nativeElement.innerHTML);
+  }
+  // TODO for undo/redo
+  private _pushHistory = (action: EditAction, contentType: ContentType, previousState: CdkSelection, currentState: CdkSelection, content: any) => {
+    this.undoStack.push({
+      action,
+      previousState,
+      currentState,
+      contentType,
+      content
+    })
+  }
 
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      this.suggestion.currentRange && selection?.addRange(this.suggestion.currentRange);
+  private _undoInsert(action: CdkEditAction) {
+    switch (action.contentType) {
+      case 'plaintext':
+
+        break;
+      case 'component':
+
+        break;
+
+      case 'format':
+        break;
+
+      case 'tag':
+        break;
+
+      case 'image':
+        break;
+
+      case 'template':
+        break;
+      default:
+        break;
     }
   }
+
+  private _undoRemove(action: CdkEditAction) {
+
+  }
+  undoStack: CdkEditAction[] = [];
+  redoStack: CdkEditAction[] = [];
+
+  undo = () => {
+
+    if (this.undoStack.length >= 1) {
+
+      let lastAction = this.undoStack.pop();
+      if (lastAction) {
+
+        switch (lastAction.action) {
+          case 'insert':
+
+            this._undoInsert(lastAction);
+            break;
+          case 'remove':
+            this._undoRemove(lastAction);
+            break;
+          default:
+            break;
+          // 'insert' | 'remove' | 'copy' | 'cut' | 'paste' | 'drop'
+
+        }
+      }
+
+    }
+
+  }
+  // 
 
   toggleMark(format: any) {
     if (!this.isMarkActive(format)) {
@@ -219,6 +347,8 @@ export class CdkRichTextEditorComponent {
     } else {
       this.removeMark(format);
     }
+
+    this._contentChanged();
   }
 
   isMarkActive(format: any): boolean {
@@ -315,6 +445,8 @@ export class CdkRichTextEditorComponent {
       const range = selection.getRangeAt(0);
       range.insertNode(img);
 
+      this._contentChanged();
+
     }
   }
 
@@ -325,9 +457,13 @@ export class CdkRichTextEditorComponent {
     } else {
       this.removeComponent(componentName);
     }
+
+    this._contentChanged();
+
   }
 
   insertComponent(componentName: Type<Component>) {
+
     const selection = window.getSelection();
 
     if (selection && selection.anchorNode) {
@@ -343,9 +479,13 @@ export class CdkRichTextEditorComponent {
 
   removeComponent(componentName: Type<Component>) {
 
+
     let componentNode = this._findParentWithTag(this._getSelectedNode(), this._getSelectorName(componentName));
 
     if (componentNode && componentNode instanceof HTMLElement) {
+
+
+
       let componentElement: HTMLElement = componentNode;
 
       const cdkContents = componentElement.querySelector('[cdkContent]')?.cloneNode(true);
@@ -362,7 +502,6 @@ export class CdkRichTextEditorComponent {
 
     return this._isChildOfTag(this._getSelectedNode(), this._getSelectorName(componentName));
   }
-
 
   onMouseDown = (event: MouseEvent) => {
     if (this.suggestionEnabled)
@@ -412,11 +551,18 @@ export class CdkRichTextEditorComponent {
         let quickToolbar = this.quickToolbar.nativeElement;
         quickToolbar.classList.toggle('show', false);
       }
-    }, 10);
+    }, 0);
 
   }
 
   onKeyDown = (event: KeyboardEvent) => {
+
+    if (event.ctrlKey && event.key === 'z') {
+
+    } else if (event.ctrlKey && event.key === 'y') {
+      // event.preventDefault();
+    }
+
 
     if (this.suggestionEnabled) {
       this.suggestion.onKeyDown(event);
@@ -436,26 +582,107 @@ export class CdkRichTextEditorComponent {
 
   }
 
+
   onValueChange = (event: Event) => {
+    event = event as KeyboardEvent;
+
+
+    // console.log(event.type, event);
+
+
+    // const selection  = window.getSelection();
+    // if (selection && selection.rangeCount > 0) {
+    //   const range = selection.getRangeAt(0);
+
+    //   const previousState : CdkSelection = {
+    //     startContainerPath: this._getPathFromNode(range.startContainer),
+
+    //   }
+    // }
+
     if (this.suggestionEnabled)
       this.suggestion.onValueChange(event);
+
+    this._contentChanged();
   }
 
   onSuggestionSelected = (event: CdkSuggestionSelect) => {
     if (this.suggestionEnabled) {
-      this._focusElementAfterSuggestion(this.richText.nativeElement);
+      this.suggestion.currentRange && focusElementWithRangeIfNotFocused(this.richText.nativeElement, this.suggestion.currentRange);
 
       this._enterSuggestion(event.item, event.triggerIndex);
     }
 
   }
 
+  onDrop = (event: DragEvent) => {
+
+    let file = event.dataTransfer?.files[0];
+    let x = event.clientX;
+    let y = event.clientY;
+    if (file && file.type.startsWith('image/')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const range = getRangeFromPosition(x, y);
+
+      const formData = new FormData();
+
+      file && formData.append('photo', file, file.name);
+      this.isUploading = true;
+
+      // this.http.post('http://localhost:3000/upload', formData).subscribe((response) => {
+      //   let url = (response as {url : string}).url;
+      //   range && focusElementWithRange(this.richText.nativeElement, range);
+      //   range && this.insertImage(url, 500, 500);
+      //   range && this._contentChanged();
+      //   this.isUploading = false;
+        
+      // }, error => {
+      //   if (error) {
+      //     console.log('error', error);
+          file && loadImage(file, (dataURI: string) => {
+            setTimeout(() => {
+              range && focusElementWithRange(this.richText.nativeElement, range);
+              range && this.insertImage(dataURI.toString(), 500, 500);
+              range && this._contentChanged();
+              this.isUploading = false;
+
+            }, 10);
+          });
+      //   }
+      // });
 
 
+
+
+
+    }
+  }
+
+  onDragOver = (event: Event) => {
+  }
+
+  onPaste = (event: ClipboardEvent) => {
+    const fileList = event.clipboardData?.files;
+    if (fileList && fileList.length > 0) {
+
+      const pasteFile = (file: File | null) => {
+        loadImage(file, (dataURI: string) => {
+          this.insertImage(dataURI.toString(), 500, 500);
+          this._contentChanged();
+
+        })
+      }
+
+      for (let i = 0; i < fileList.length; i++)
+        pasteFile(fileList.item(i));
+    }
+
+  }
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
-
+    private http: HttpClient,
     private componentFactoryResolver: ComponentFactoryResolver,
 
   ) { }

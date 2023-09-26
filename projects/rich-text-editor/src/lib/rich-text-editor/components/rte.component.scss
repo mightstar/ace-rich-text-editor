@@ -35,3 +35,14 @@ div.rte-text-editor {
     overflow: auto;
     background-color: white;
 }
+
+.rte-uploading-progress {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(169, 169, 169, 0.658);
+}

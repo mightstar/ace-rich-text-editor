@@ -198,8 +198,6 @@ export class CdkSuggestionComponent {
 
         if (event.key == 'ArrowDown') {
             if (this.isVisible) {
-
-
                 if (this._moveSelected(1))
                     event.preventDefault();
                 return;

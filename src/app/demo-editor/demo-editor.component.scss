@@ -57,4 +57,20 @@
     }
 }
 
+.demo-embed-container {
+    margin-top: 10px;
+}
+.demo-embed-iframe {
+    height: 500px;
+    width: 100%;
+    border: 1px solid gray;
+}
 
+.demo-embed-input {
+    box-sizing: border-box;
+    font-size: 0.85em;
+    width: 100%;
+    padding: 0.5em;
+    border: 2px solid #ddd;
+    background: #fafafa;
+}

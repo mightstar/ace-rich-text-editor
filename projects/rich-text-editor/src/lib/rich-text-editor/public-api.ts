@@ -18,7 +18,12 @@
 // export {CdkDropList} from './directives/drop-list';
 // export * from './directives/config';
 // export * from './directives/drop-list-group';
-export * from './directives/rte'
 // export * from './directives/drag-handle';
 // export * from './directives/drag-preview';
 // export * from './directives/drag-placeholder';
+
+
+export * from './components/rte.component';
+export * from './components/rte.service';
+
+export * from './components/suggestion.component';
