@@ -39,7 +39,6 @@ export interface CdkEditAction {
   standalone: true
 })
 export class CdkRichTextEditorComponent {
-
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
