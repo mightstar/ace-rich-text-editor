@@ -1,10 +1,9 @@
 import { Type, Component, HostListener, QueryList, Injector, ElementRef, ViewChild, ContentChild, ContentChildren, Input, TemplateRef, Output, EventEmitter, ViewContainerRef, ComponentFactoryResolver, createComponent, EmbeddedViewRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion.component';
 import { isRectEmpty, focusElementWithRangeIfNotFocused, focusElementWithRange, getRangeFromPosition } from '../utils/DOM';
 import { loadImage } from '../utils/image';
-import { CircularProgressComponent } from './circular-progressive.component';
-import { HttpClient } from '@angular/common/http';
 
 export interface CdkSuggestionSetting {
   trigger: string,
@@ -36,7 +35,7 @@ export interface CdkEditAction {
   selector: 'rte-root',
   templateUrl: './rte.component.html',
   styleUrls: ['./rte.component.scss'],
-  imports: [CommonModule, CdkSuggestionComponent, CircularProgressComponent],
+  imports: [CommonModule, CdkSuggestionComponent],
   standalone: true
 })
 export class CdkRichTextEditorComponent {
@@ -45,11 +44,6 @@ export class CdkRichTextEditorComponent {
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbar!: ElementRef<HTMLElement>;
   @ViewChild('suggestion') suggestion!: CdkSuggestionComponent;
-
-
-
-  @Input('cdkQuickToolbar')
-  quick_toolbar!: TemplateRef<any>;
 
   @Input('cdkSuggestions')
   suggestionList: CdkSuggestionSetting[] = [];

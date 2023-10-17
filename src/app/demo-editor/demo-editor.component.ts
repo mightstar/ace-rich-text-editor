@@ -1,22 +1,25 @@
-import { Component, ViewChild, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
+import { Component, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkRichTextEditorComponent, CdkSuggestionSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
-import { DemoButtonComponent } from './demo-button.component';
-import { ImageSettingDialog, ImageSettingInfo } from './image-setting-dialog/image-setting-dialog.component';
-import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion.component';
-import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormsModule } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-
 import { HttpClientModule } from '@angular/common/http';
+
+import {
+  CdkRichTextEditorComponent,
+  CdkSuggestionSetting,
+} from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
+import { DemoButtonComponent } from './demo-button.component';
+import { ImageSettingDialog } from './image-setting-dialog/image-setting-dialog.component';
+import { HashtagComponent } from './hashtag/hashtag.component';
+
 import { CustomEmbedComponent } from './custom-embed.component';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
   underline = 'underline',
   strike = 'strikeThrough',
-  code = 'code-line'
+  code = 'code-line',
 }
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
@@ -26,39 +29,43 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
   standalone: true,
   template: `
     <span style="border: 1px solid grey">
-      <b>Unusual: </b>  
+      <b>Unusual: </b>
       <a href="#" onClick="window.alert('hashtag');">
         <span cdkContent>
           <ng-content></ng-content>
         </span>
       </a>
     </span>
-  `
+  `,
 })
-export class UnusualInlineComponent { }
+export class UnusualInlineComponent {}
 
-
-
-
-
-@Pipe({name: 'SafeURL', standalone: true})
+@Pipe({ name: 'SafeURL', standalone: true })
 export class SafeUrlPipe implements PipeTransform {
-    constructor(private sanitizer: DomSanitizer) {
-    }
+  constructor(private sanitizer: DomSanitizer) {}
 
-    public transform(url: string) {
-        return this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    }
+  public transform(url: string) {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 }
-
 
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [ SafeUrlPipe, CdkRichTextEditorComponent, HttpClientModule, DemoButtonComponent,HashtagComponent, UnusualInlineComponent, ImageSettingDialog,FormsModule, CommonModule, CustomEmbedComponent],
+  imports: [
+    SafeUrlPipe,
+    CdkRichTextEditorComponent,
+    HttpClientModule,
+    DemoButtonComponent,
+    HashtagComponent,
+    UnusualInlineComponent,
+    ImageSettingDialog,
+    FormsModule,
+    CommonModule,
+    CustomEmbedComponent,
+  ],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true,
-
 })
 export class DemoEditorComponent {
   // @ViewChild('quick_toolbar', { read: TemplateRef, static: true })
@@ -82,7 +89,6 @@ export class DemoEditorComponent {
   showImageSetting: boolean = false;
 
   toggleMark = (format: any) => {
-
     this.editor.toggleMark(format);
     this.updateToolbar();
   };
@@ -97,93 +103,89 @@ export class DemoEditorComponent {
   }
 
   updateToolbar() {
-    this.toolbarItems.forEach(item => {
+    this.toolbarItems.forEach((item) => {
       item.active = this.isMarkActive(item.format);
 
-      if (item.format == 'insert-image')
-        item.active = true;
+      if (item.format == 'insert-image') item.active = true;
       if (item.format == 'insert-unusual-inline')
         item.active = this.isComponentActive();
     });
-
-    
-
   }
 
   handleClickAddImage = () => {
     // this.showImageSetting = true;
     const url = window.prompt('Input image url');
-    if (url)
-      this.editor.insertImage(url, 500, 500);
-
-
-  }
+    if (url) this.editor.insertImage(url, 500, 500);
+  };
 
   insertImage = (url: string, width: number, height: number) => {
-
     this.editor.insertImage(url, 500, 500);
+  };
 
-  }
-
-  handleContent = (content : string) => {
-
+  handleContent = (content: string) => {
     this.embedContent = content;
-  }
+  };
 
   isComponentActive = () => {
     return this.editor.isActiveComponent(UnusualInlineComponent);
-  }
+  };
 
   toggleComponent = () => {
     this.editor.toggleComponent(UnusualInlineComponent);
 
     this.updateToolbar();
-  }
+  };
 
   filter = (query: string, key: string) => {
     return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
-  }
+  };
 
   ngAfterContentChecked() {
     this.suggestions = [
       {
-        trigger: "@",
+        trigger: '@',
         itemTemplate: this.suggestionItemTemplate,
         inputTemplate: this.suggestionInputTemplate,
-        data: [{
-          key: "Jane Eyre", value: "Jane Eyre"
-        },
-        {
-          key: "William Shakespeare", value: "William Shakespeare"
-        },
-        {
-          key: "John Smith", value: "John Smith"
-        },],
-        queryFilter: this.filter
+        data: [
+          {
+            key: 'Jane Eyre',
+            value: 'Jane Eyre',
+          },
+          {
+            key: 'William Shakespeare',
+            value: 'William Shakespeare',
+          },
+          {
+            key: 'John Smith',
+            value: 'John Smith',
+          },
+        ],
+        queryFilter: this.filter,
       },
       {
-        trigger: "#",
+        trigger: '#',
         itemTemplate: this.hashtagItemTemplate,
         inputTemplate: this.hashtagInputTemplate,
-        data: [{
-          key: "Red", value: "Red"
-        },
-        {
-          key: "Green", value: "Green"
-
-        },
-        {
-          key: "Blue", value: "Blue"
-
-        },],
-        queryFilter: this.filter
-      }
+        data: [
+          {
+            key: 'Red',
+            value: 'Red',
+          },
+          {
+            key: 'Green',
+            value: 'Green',
+          },
+          {
+            key: 'Blue',
+            value: 'Blue',
+          },
+        ],
+        queryFilter: this.filter,
+      },
     ];
   }
 
-  suggestions: CdkSuggestionSetting[] = [
- 
-  ];
+  suggestions: CdkSuggestionSetting[] = [];
 
   suggestionEnabled = true;
 
@@ -192,74 +194,71 @@ export class DemoEditorComponent {
       format: MarkTypes.bold,
       icon: 'format_bold',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: MarkTypes.italic,
       icon: 'format_italic',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: MarkTypes.underline,
       icon: 'format_underlined',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: MarkTypes.code,
       icon: 'code',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'heading-one',
       icon: 'looks_one',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'heading-two',
       icon: 'looks_two',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'blockquote',
       icon: 'format_quote',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'numbered-list',
       icon: 'format_list_numbered',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'bulleted-list',
       icon: 'format_list_bulleted',
       active: false,
-      action: this.toggleMark
+      action: this.toggleMark,
     },
     {
       format: 'insert-image',
       icon: 'add_photo_alternate',
       active: true,
-      action: this.handleClickAddImage
+      action: this.handleClickAddImage,
     },
     {
       format: 'insert-unusual-inline',
       icon: 'link',
       active: false,
       action: this.toggleComponent,
-    }
+    },
   ];
 
-  embed_url = "https://richtexteditor.com/Demos/drag-and-drop-images.aspx";
+  embed_url = 'https://richtexteditor.com/Demos/drag-and-drop-images.aspx';
 
-  embedContent = "";
-
-  
-
+  embedContent = '';
 }
