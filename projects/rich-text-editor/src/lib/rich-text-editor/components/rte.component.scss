@@ -1,22 +1,22 @@
 .rte-wrapper {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 div.rte-text-editor {
-    height: 500px;
-    border: 1px solid gray !important;
-    padding: 12px;
-    overflow: auto;
-    background-color: white;
+  height: 500px;
+  border: 1px solid gray !important;
+  padding: 12px;
+  overflow: auto;
+  background-color: white;
 }
 
 .rte-uploading-progress {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(169, 169, 169, 0.658);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(169, 169, 169, 0.658);
 }

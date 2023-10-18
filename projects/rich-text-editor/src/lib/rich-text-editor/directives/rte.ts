@@ -1,17 +1,6 @@
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-
-
 import { DOCUMENT } from '@angular/common';
 import {
   AfterViewInit,
-  ContentChild,
-  ContentChildren,
   Directive,
   ElementRef,
   EventEmitter,
@@ -19,28 +8,16 @@ import {
   Input,
   NgZone,
   OnDestroy,
-  Optional,
   Output,
-  QueryList,
-  SkipSelf,
-  ViewContainerRef,
   OnChanges,
   SimpleChanges,
-  ChangeDetectorRef,
-  Self,
-  InjectionToken,
 } from '@angular/core';
-
-
-import { Observable, Observer, Subject, merge } from 'rxjs';
-import { startWith, take, map, takeUntil, switchMap, tap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { take, takeUntil } from 'rxjs/operators';
 
 import { CDK_RTE_PARENT } from '../rte-parents';
-
 import { CdkRichTextEditorRef } from '../rte-ref';
-
 import { CdkEditorSelect } from '../rte-event';
-
 import { RTECreator } from '../rte-creator';
 
 const RTE_HOST_CLASS = 'cdk-text-editor';
@@ -58,7 +35,7 @@ const RTE_HOST_CLASS = 'cdk-text-editor';
   exportAs: 'cdkTextEditor',
   standalone: true,
   host: {
-    'class': RTE_HOST_CLASS,
+    class: RTE_HOST_CLASS,
   },
   providers: [{ provide: CDK_RTE_PARENT, useExisting: CdkRichTextEditor }],
 })
@@ -72,7 +49,7 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
   // @ContentChild(CDK_DRAG_PLACEHOLDER) _placeholderTemplate: CdkRichTextEditorPlaceholder;
 
   /** Arbitrary data to attach to this drag instance. */
-  @Input('cdkRichTextEditorData') content: string = "";
+  @Input('cdkRichTextEditorData') content: string = '';
 
   /**
    * Node or selector that will be used to determine the element to which the draggable's
@@ -80,19 +57,18 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
    * will be matched starting from the element's parent and going up the DOM until a match
    * has been found.
    */
-  @Input('cdkRichTextEditorHoverMenu') hoverMenuElement: string | ElementRef<HTMLElement> | HTMLElement = document.createElement('div');
-
-
+  @Input('cdkRichTextEditorHoverMenu') hoverMenuElement:
+    | string
+    | ElementRef<HTMLElement>
+    | HTMLElement = document.createElement('div');
 
   /** Emits when the user drops the item inside a container. */
-  @Output('cdkRichTextEditorSelected') readonly selected: EventEmitter<CdkEditorSelect<any>> = new EventEmitter<
-    CdkEditorSelect<any>
-  >();
-
+  @Output('cdkRichTextEditorSelected')
+  readonly selected: EventEmitter<CdkEditorSelect<any>> = new EventEmitter<CdkEditorSelect<any>>();
 
   constructor(
     /** Element that the draggable is attached to. */
-    public element: ElementRef<HTMLElement>,
+    element: ElementRef<HTMLElement>,
 
     /**
      * @deprecated `_document` parameter no longer being used and will be removed.
@@ -100,9 +76,7 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
      */
     @Inject(DOCUMENT) _document: any,
     private _ngZone: NgZone,
-    private _viewContainerRef: ViewContainerRef,
-    rteCreator: RTECreator,
-    private _changeDetectorRef: ChangeDetectorRef,
+    rteCreator: RTECreator
   ) {
     this._rteRef = rteCreator.createRTE(element, this);
 
@@ -114,13 +88,10 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
     this._handleEvents(this._rteRef);
   }
 
-
-
   /** Returns the root draggable element. */
   getHoverMenuElement(): HTMLElement {
     return this._rteRef.getHoverMenuElement();
   }
-
 
   ngAfterViewInit() {
     // Normally this isn't in the zone, but it can cause major performance regressions for apps
@@ -130,27 +101,25 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
       // element to be in the proper place in the DOM. This is mostly relevant
       // for draggable elements inside portals since they get stamped out in
       // their original DOM position and then they get transferred to the portal.
-      this._ngZone.onStable.pipe(take(1), takeUntil(this._destroyed)).subscribe(() => {
-        this._updateHoverMenuElement();
-      });
+      this._ngZone.onStable
+        .pipe(take(1), takeUntil(this._destroyed))
+        .subscribe(() => {
+          this._updateHoverMenuElement();
+        });
     });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // const rootSelectorChange = changes['rootElementSelector'];
     // const positionChange = changes['freeDragPosition'];
-
     // // We don't have to react to the first change since it's being
     // // handled in `ngAfterViewInit` where it needs to be deferred.
     // if (rootSelectorChange && !rootSelectorChange.firstChange) {
     //   this._updateHoverMenuElement();
     // }
-
-
   }
 
   ngOnDestroy() {
-
     // Unnecessary in most cases, but used to avoid extra change detections with `zone-paths-rxjs`.
     this._ngZone.runOutsideAngular(() => {
       this._destroyed.next();
@@ -160,32 +129,22 @@ export class CdkRichTextEditor implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /** Syncs the root element with the `DragRef`. */
-  private _updateHoverMenuElement() {
-
-  }
-
+  private _updateHoverMenuElement() {}
 
   /** Syncs the inputs of the CdkRichTextEditor with the options of the underlying DragRef. */
-  private _syncInputs(ref: CdkRichTextEditorRef<CdkRichTextEditor>) {
+  private _syncInputs(ref: CdkRichTextEditorRef<CdkRichTextEditor>) {}
 
-  }
-
-   
   /** Handles the events from the underlying `DragRef`. */
   private _handleEvents(ref: CdkRichTextEditorRef<CdkRichTextEditor>) {
-  ref.selected.subscribe(selectEvent => {
-    this.selected.emit({
-      command: {
-        format: "heading-two"
-      }
+    ref.selected.subscribe((selectEvent) => {
+      this.selected.emit({
+        command: {
+          format: 'heading-two',
+        },
+      });
     });
-  });
-}
+  }
 
   /** Assigns the default input values based on a provided config object. */
-  private _assignDefaults(config: any) {
-
-}
-
-  
+  private _assignDefaults(config: any) {}
 }
