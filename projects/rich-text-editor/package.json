@@ -1,5 +1,5 @@
 {
-  "name": "@recruitler/rte" ,
+  "name": "rich-text-editor",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^16.2.0",
@@ -8,9 +8,5 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false,
-  "scripts": {
-    "ng": "ng",
-    "packagr": "ng-packagr -p ng-package.json"
-  }
+  "sideEffects": false
 }

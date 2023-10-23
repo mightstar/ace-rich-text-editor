@@ -1,7 +1,14 @@
 <div #container class="rte-suggestion-box">
-    <div *ngFor="let suggestion of filteredSuggestions;let i = index" (click)="onClick($event, suggestion)">
-        <ng-container *ngTemplateOutlet="itemTemplate; context:{$implicit: suggestion.value, active: i == selectedIndex}">
-        </ng-container>
-    </div>
-
+  <div
+    *ngFor="let suggestion of filteredSuggestions; let i = index"
+    (click)="onClick($event, suggestion)"
+  >
+    <ng-container
+      *ngTemplateOutlet="
+        itemTemplate;
+        context: { $implicit: suggestion.value, active: i == selectedIndex }
+      "
+    >
+    </ng-container>
+  </div>
 </div>

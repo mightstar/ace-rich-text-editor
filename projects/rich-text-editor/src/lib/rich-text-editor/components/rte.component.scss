@@ -1,14 +1,79 @@
+.rte-text-editor {
+  h1 {
+    color: rgb(66, 114, 89);
+  }
+
+  h2 {
+    color: rgb(193, 211, 113);
+  }
+
+  h3 {
+  }
+
+  h4 {
+  }
+
+  h5 {
+  }
+
+  b {
+  }
+
+  i {
+  }
+
+  u {
+  }
+
+  blockquote {
+    border-left: 2px solid #ddd;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 10px;
+    color: #aaa;
+    font-style: italic;
+  }
+
+  code {
+    font-family: monospace;
+    background-color: #aaa;
+
+    padding: 3px;
+  }
+
+  ol {
+  }
+
+  ol li {
+  }
+
+  ul li {
+  }
+
+  img {
+  }
+}
+
 .rte-wrapper {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
 div.rte-text-editor {
-  height: 500px;
-  border: 1px solid gray !important;
+  display: block;
+  height: 100%;
+  width: 100%;
   padding: 12px;
   overflow: auto;
   background-color: white;
+  border: none;
+}
+
+div.rte-text-editor:focus {
+  box-shadow: none;
+  border: 0px;
+  outline: 0px solid transparent !important;
 }
 
 .rte-uploading-progress {
@@ -19,4 +84,95 @@ div.rte-text-editor {
   justify-content: center;
   align-items: center;
   background-color: rgba(169, 169, 169, 0.658);
+}
+
+.toolbar-btn {
+  align-items: center;
+  background: 0 0;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: none;
+  color: #12171d;
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 400;
+  height: 33px;
+  justify-content: center;
+  margin: 2px 1px 2px 1px;
+  outline: 0;
+  overflow: hidden;
+  padding: 0;
+  text-transform: none;
+  width: 34px;
+  cursor: pointer;
+}
+.toolbar-btn.rte-active {
+  background-color: #c8cbcf;
+}
+.toolbar-btn:hover {
+  background-color: #c8cbcf;
+}
+
+.rte-quick-toolbar {
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s opacity;
+}
+
+.rte-quick-toolbar.rte-show {
+  opacity: 0.8;
+  z-index: 5;
+}
+
+.rte-quick-toolbar.rte-show:hover {
+  // background-color: red;
+  opacity: 1;
+}
+
+.toolbar-btn-group {
+  display: flex;
+}
+
+.popup {
+  border-color: #aaa transparent transparent transparent;
+}
+
+.popup::after,
+.popup::before {
+  left: 50%;
+  top: 100%;
+
+  border-style: solid;
+  content: "";
+  display: block;
+  height: 0;
+  opacity: 1;
+  position: absolute;
+  width: 0;
+}
+
+.popup {
+  background-color: #fff;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.popup::before {
+  border-color: #aaa transparent transparent transparent;
+  border-width: 9px;
+  margin-left: -9px;
+}
+
+.popup::after {
+  border-color: white transparent transparent transparent;
+  border-width: 8px;
+  margin-left: -8px;
+  margin-top: -1px;
 }

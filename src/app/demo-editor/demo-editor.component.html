@@ -1,72 +1,36 @@
 <p>demo-editor works!</p>
-<ng-template #quick_toolbar>
-  <div class="demo-quick-toolbar">
-    <demo-button
-      *ngFor="let toolbarItem of toolbarItems"
-      [active]="toolbarItem.active"
-      (onMouseDown)="toolbarItem.action(toolbarItem.format)">
-      <span class="material-icons">{{ toolbarItem.icon }}</span>
-      </demo-button>
-  </div>
-</ng-template>
+
 
 <ng-template #suggestionItemTemplate let-value let-active="active">
-  <div class="suggestion-item" [class.selected]="active">
-    <b>{{ value }}</b>
-  </div>
+    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
+    </div>
 </ng-template>
 
 <ng-template #suggestionInputTemplate let-value="value">
-  <span contenteditable="false" class="demo-mention-view">
-    <b>@{{ value }}</b>
-  </span>
+    <span contenteditable="false" class="demo-mention-view"><b>@{{value}}</b>
+    </span>
 </ng-template>
 
 <ng-template #hashtagItemTemplate let-value let-active="active">
-  <div class="suggestion-item" [class.selected]="active">
-    <b>{{ value }}</b>
-  </div>
+    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
+    </div>
 </ng-template>
 
 <ng-template #hashtagInputTemplate let-value="value">
-  <app-hashtag> #{{ value }} </app-hashtag>
+
+    <app-hashtag>
+        #{{value}}
+    </app-hashtag>
 </ng-template>
 
+
+
 <div class="demo-editor">
-  <rte-root
-    #editor
-    [cdkSuggestionEnabled]="suggestionEnabled"
-    [cdkSuggestions]="suggestions"
-    (cdkEditorSelectionChanged)="selectionChanged($event)"
-    (cdkContentChanged)="handleContent($event)">
-    <h1>Apache Superset</h1>
-    Normal Text<br />
-    <b>Bold Text</b><br />
-    <i>Italic Text</i><br />
-    <u>Underline Text</u>
-    <h1>Heading1</h1>
-    <h2>Heading2</h2>
-
-    <!-- <div contenteditable="false" class="demo-embed-container">
-            <div>
-                No iframes
-                <iframe [src]="embed_url | SafeURL"  class="demo-embed-iframe">
-
-                </iframe>
-            </div> 
-
-            <div>
-               
-            </div>
-
-        </div> -->
-  </rte-root>
-
-  <hr />
-  <h1>Custom Embed with DOM Santanizer</h1>
-  <custom-embed [content]="embedContent"> </custom-embed>
-
-  <!-- <div contenteditable="true" style="height: 500px;">
+    <rte-text-editor #editor  [cdkSuggestionEnabled]="suggestionEnabled"
+        [cdkSuggestions]="suggestions" 
+        [cdkDefaultToolbarItems]="toolbarItems"
+        (cdkContentChanged)="handleContent($event)"
+        >
         <h1>Apache Superset</h1>
         Normal Text<br>
         <b>Bold Text</b><br>
@@ -74,20 +38,17 @@
         <u>Underline Text</u>
         <h1>Heading1</h1>
         <h2>Heading2</h2>
-        <blockquote>Hello World. This is quotation.</blockquote>
-        <ol>
-            <li>Apple</li>
-            <li>Banana</li>
-            <li>Cake</li>
-        </ol>
-        <ul>
-            <li>Apple</li>
-            <li>Banana</li>
-            <li>Cake</li>
-        </ul>
 
-        <app-dynamic-component>
-            Link
-        </app-dynamic-component>
-    </div> -->
+        
+    </rte-text-editor>
+
+
+
+    <hr/>
+    <h1>Custom Embed with DOM Santanizer</h1>
+    <custom-embed [content]="embedContent">
+        
+    </custom-embed>
+
+    
 </div>

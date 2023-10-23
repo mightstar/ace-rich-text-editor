@@ -1,18 +1,21 @@
-export function loadImage(
-  file: File | null,
-  cbAfterLoad: (url: string) => void
-) {
-  if (file && file.type.startsWith('image/')) {
-    let reader = new FileReader();
+export function loadImage(file: File | null, cbAfterLoad: (url: string) => void) {
+    if (file && file.type.startsWith('image/')) {
 
-    reader.onload = function (theFile) {
-      if (theFile == null || theFile === undefined) return;
+        let reader = new FileReader();
 
-      let dataURI = theFile.target?.result;
+        reader.onload = (function (theFile) {
+            if (theFile == null || theFile === undefined)
+                return;
 
-      if (dataURI) cbAfterLoad(dataURI.toString());
-    };
+            let dataURI = theFile.target?.result;
 
-    reader.readAsDataURL(file);
-  }
+            if (dataURI) {
+                cbAfterLoad(dataURI.toString());
+            }
+
+        });
+
+        reader.readAsDataURL(file);
+    }
 }
+

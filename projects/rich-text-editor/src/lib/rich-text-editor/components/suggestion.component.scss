@@ -1,4 +1,5 @@
 .rte-suggestion-box {
+  display: block;
   position: absolute;
   top: 0;
   z-index: -1;
@@ -10,7 +11,7 @@
   overflow: auto;
 }
 
-.rte-suggestion-box.show {
+.rte-suggestion-box.rte-show {
   z-index: 5;
   opacity: 1;
 }
