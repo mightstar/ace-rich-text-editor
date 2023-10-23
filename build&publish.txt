@@ -1,0 +1,16 @@
+npm install angular-cli -g
+
+ng build rich-text-editor
+
+cd dist\rich-text-editor
+
+npm publish
+
+To publish a module, npm login is needed.
+
+login to https://www.npmjs.com/
+
+After creating an account, run npm login command and login to npm package repositry.
+
+After that, npm publish
+
