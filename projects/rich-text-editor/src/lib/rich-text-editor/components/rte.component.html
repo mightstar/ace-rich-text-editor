@@ -1,15 +1,14 @@
 <!-- /Controls -->
 <!-- Rich text -->
 
-<ng-template #default_quick_toolbar>
-  <div class="toolbar-btn-group popup">
+<ng-template #defaultToolbar>
+  <div class="rte-toolbar-btn-group rte-popup">
     <button
       *ngFor="let item of toolbarItems"
-      class="toolbar-btn icon"
+      class="rte-toolbar-btn icon"
       [ngClass]="{ 'rte-active': item.active }"
       (click)="onToolbarItemClick($event, item)"
-      class="toolbar-btn icon rte-active"
-      tabindex="-1"
+      class="rte-toolbar-btn icon rte-active"
     >
       <span [innerHTML]="item.icon"></span>
     </button>
@@ -18,15 +17,14 @@
 
 <div #templates style="display: none">
   <code></code>
-  
 </div>
 
 <div class="rte-wrapper">
   <div #quickToolbar class="rte-quick-toolbar">
-    <ng-container *ngTemplateOutlet="quick_toolbar"></ng-container>
+    <ng-container *ngTemplateOutlet="toolbarTemplate"></ng-container>
   </div>
   <div *ngIf="isUploading" class="rte-uploading-progress">
-    <app-circular-progress />
+    <rte-circular-progress />
   </div>
   <rte-suggestion
     #suggestion
@@ -38,7 +36,6 @@
   <div
     #richText
     class="rte-text-editor"
-    id="textBox"
     [contentEditable]="true"
     (mousedown)="onMouseDown($event)"
     (focus)="onFocusIn()"

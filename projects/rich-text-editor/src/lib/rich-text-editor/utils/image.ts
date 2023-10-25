@@ -12,7 +12,6 @@ export function loadImage(file: File | null, cbAfterLoad: (url: string) => void)
             if (dataURI) {
                 cbAfterLoad(dataURI.toString());
             }
-
         });
 
         reader.readAsDataURL(file);

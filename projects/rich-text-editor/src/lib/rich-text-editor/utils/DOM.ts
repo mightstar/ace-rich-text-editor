@@ -1,6 +1,5 @@
 
 export function isRectEmpty(rect: DOMRect) {
-
     return rect.x == 0 && rect.y == 0 && rect.right == 0 && rect.bottom == 0;
 }
 
@@ -22,12 +21,10 @@ export function focusElementWithRange(element: HTMLElement, range: Range) {
     const selection = window.getSelection();
     selection?.removeAllRanges();
     range && selection?.addRange(range);
-
 }
 
 
 // COMPAT: In Firefox, `caretRangeFromPoint` doesn't exist. (2016/07/25)
-
 export function getRangeFromPosition(x: number, y: number): Range | null {
     let domRange: Range | null = null;
     if (document.caretRangeFromPoint) {

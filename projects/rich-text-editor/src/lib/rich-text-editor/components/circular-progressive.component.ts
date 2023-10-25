@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-circular-progress',
+  selector: 'rte-circular-progress',
   template: `
     <div class="loader" style="display: flex;width: 60px; height: 60px">
       <div class="small-loader" style="margin: auto; width: 30px; height: 30px"></div>

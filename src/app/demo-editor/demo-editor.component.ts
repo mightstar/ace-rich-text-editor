@@ -35,10 +35,6 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 })
 export class UnusualInlineComponent { }
 
-
-
-
-
 @Pipe({ name: 'SafeURL', standalone: true })
 export class SafeUrlPipe implements PipeTransform {
   constructor(private sanitizer: DomSanitizer) {
@@ -48,7 +44,6 @@ export class SafeUrlPipe implements PipeTransform {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }
-
 
 @Component({
   selector: 'app-demo-editor',
@@ -60,29 +55,21 @@ export class SafeUrlPipe implements PipeTransform {
 
 })
 export class DemoEditorComponent {
-  // @ViewChild('quick_toolbar', { read: TemplateRef, static: true })
-  // quick_toolbar!: TemplateRef<any>;
-
   @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true })
   suggestionItemTemplate!: TemplateRef<any>;
 
-  @ViewChild('suggestionInputTemplate', { read: TemplateRef, static: true })
-  suggestionInputTemplate!: TemplateRef<any>;
+  @ViewChild('suggestionSelectionTemplate', { read: TemplateRef, static: true })
+  suggestionSelectionTemplate!: TemplateRef<any>;
 
   @ViewChild('hashtagItemTemplate', { read: TemplateRef, static: true })
   hashtagItemTemplate!: TemplateRef<any>;
 
-  @ViewChild('hashtagInputTemplate', { read: TemplateRef, static: true })
-  hashtagInputTemplate!: TemplateRef<any>;
-
-
-
+  @ViewChild('hashtagSelectionTemplate', { read: TemplateRef, static: true })
+  hashtagSelectionTemplate!: TemplateRef<any>;
 
   handleContent = (content: string) => {
-
     this.embedContent = content;
   }
-
 
   filter = (query: string, key: string) => {
     return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
@@ -93,7 +80,7 @@ export class DemoEditorComponent {
       {
         trigger: "@",
         itemTemplate: this.suggestionItemTemplate,
-        inputTemplate: this.suggestionInputTemplate,
+        selectionTemplate: this.suggestionSelectionTemplate,
         data: [{
           key: "Jane Eyre", value: "Jane Eyre"
         },
@@ -108,7 +95,7 @@ export class DemoEditorComponent {
       {
         trigger: "#",
         itemTemplate: this.hashtagItemTemplate,
-        inputTemplate: this.hashtagInputTemplate,
+        selectionTemplate: this.hashtagSelectionTemplate,
         data: [{
           key: "Red", value: "Red"
         },

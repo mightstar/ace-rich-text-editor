@@ -16,8 +16,6 @@ export interface CdkSuggestionSelect {
     triggerIndex: number
 }
 
-
-
 @Component({
     selector: 'rte-suggestion',
     templateUrl: './suggestion.component.html',
@@ -25,6 +23,7 @@ export interface CdkSuggestionSelect {
     imports: [CommonModule],
     standalone: true
 })
+
 export class CdkSuggestionComponent {
 
     @Input('cdkSuggestionList') suggestionList!: CdkSuggestionSetting[];
@@ -43,7 +42,6 @@ export class CdkSuggestionComponent {
     selectedIndex: number = -1;
 
     isVisible: boolean = false;
-
 
     startedNode!: Node | undefined;
 
@@ -69,8 +67,6 @@ export class CdkSuggestionComponent {
 
             return false;
         }
-
-
         newIndex = (newIndex + this.filteredSuggestions.length) % this.filteredSuggestions.length;
 
         this.selectedIndex = newIndex;
@@ -92,12 +88,7 @@ export class CdkSuggestionComponent {
         } else {
             return false;
         }
-
-
-
-
     }
-
 
     private _enterSuggestion = (event: Event) => {
         if (this.selectedIndex >= 0 && this.selectedIndex < this.filteredSuggestions.length) {
@@ -108,7 +99,6 @@ export class CdkSuggestionComponent {
                 triggerIndex: this.triggerIndex
             });
         }
-
     }
 
     private _updateQuery = () => {
@@ -137,26 +127,19 @@ export class CdkSuggestionComponent {
         }
     }
 
-
-
     filterItems = (query: string) => {
         this.filteredSuggestions = this.suggestions.filter((item) => this.filter(query, item.key));
-
     }
 
     show = (visible: boolean) => {
-
         this.isVisible = visible;
-
         if (!visible) {
             this.container.nativeElement.classList.toggle('rte-show', false);
             this.query = "";
-
             this.startedNode = undefined;
             this.startedOffset = -1;
             this.currentRange = undefined;
             this.selectedIndex = -1;
-
             return;
         }
 
@@ -171,24 +154,19 @@ export class CdkSuggestionComponent {
 
                 this.currentRange = selection.getRangeAt(0);
 
-
                 let rect = selection.getRangeAt(0).getBoundingClientRect();
                 if (isRectEmpty(rect)) {
                     rect = (selection.getRangeAt(0).startContainer as Element).getBoundingClientRect();
                 }
 
-
                 const editorRect = this.container.nativeElement.parentElement?.getBoundingClientRect();
-
                 if (editorRect) {
                     this.container.nativeElement.style.top = "" + (rect.bottom - editorRect.top) + "px";
                     this.container.nativeElement.style.left = "" + (rect.right - editorRect.x) + "px";
                     this.container.nativeElement.classList.toggle('rte-show', true);
                 }
-
             }
         }
-
     }
 
     onKeyDown = (event: KeyboardEvent) => {
@@ -221,7 +199,6 @@ export class CdkSuggestionComponent {
             }
         }
 
-
         if (event.key == 'ArrowLeft' || event.key == 'ArrowRight') {
             if (this.isVisible)
                 setTimeout(() => this._updateQuery(), 0);
@@ -236,7 +213,6 @@ export class CdkSuggestionComponent {
         this.selectedIndex = this.filteredSuggestions.findIndex((item) => item.key == clickedItem.key);
 
         this._enterSuggestion(event);
-
     }
 
     onMouseDown(event: MouseEvent) {
@@ -249,7 +225,6 @@ export class CdkSuggestionComponent {
             event.y >= rect.top &&
             event.y <= rect.bottom))
             this.show(false);
-
     }
 
 
@@ -265,7 +240,6 @@ export class CdkSuggestionComponent {
     onValueChange = (event: Event) => {
         let ev = event as InputEvent;
         if (ev.data && (this.isVisible === false || this.isVisible && this.filteredSuggestions.length == 0)) {
-
             const listIndex = this.suggestionList.findIndex(item => item.trigger == ev.data)
             if (listIndex >= 0 && listIndex < this.suggestionList.length) {
                 this.show(false);
@@ -273,14 +247,9 @@ export class CdkSuggestionComponent {
                 return this.show(true);
             }
         }
-
         if (this.isVisible) {
             this._updateQuery();
         }
     }
-
-
-
-
 
 }

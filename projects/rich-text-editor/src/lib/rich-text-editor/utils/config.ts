@@ -33,6 +33,18 @@ export const TOOLBAR_ITEMS = [
     icon: 'H2',
   },
   {
+    action: 'heading2',
+    icon: 'H3',
+  },
+  {
+    action: 'heading2',
+    icon: 'H4',
+  },
+  {
+    action: 'heading2',
+    icon: 'H5',
+  },
+  {
     action: 'quote',
     icon: 'Q',
   },

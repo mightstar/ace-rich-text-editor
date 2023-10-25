@@ -86,7 +86,7 @@ div.rte-text-editor:focus {
   background-color: rgba(169, 169, 169, 0.658);
 }
 
-.toolbar-btn {
+.rte-toolbar-btn {
   align-items: center;
   background: 0 0;
   border: 0;
@@ -108,10 +108,10 @@ div.rte-text-editor:focus {
   width: 34px;
   cursor: pointer;
 }
-.toolbar-btn.rte-active {
+.rte-toolbar-btn.rte-active {
   background-color: #c8cbcf;
 }
-.toolbar-btn:hover {
+.rte-toolbar-btn:hover {
   background-color: #c8cbcf;
 }
 
@@ -129,20 +129,19 @@ div.rte-text-editor:focus {
 }
 
 .rte-quick-toolbar.rte-show:hover {
-  // background-color: red;
   opacity: 1;
 }
 
-.toolbar-btn-group {
+.rte-toolbar-btn-group {
   display: flex;
 }
 
-.popup {
+.rte-popup {
   border-color: #aaa transparent transparent transparent;
 }
 
-.popup::after,
-.popup::before {
+.rte-popup::after,
+.rte-popup::before {
   left: 50%;
   top: 100%;
 
@@ -155,7 +154,7 @@ div.rte-text-editor:focus {
   width: 0;
 }
 
-.popup {
+.rte-popup {
   background-color: #fff;
   border: 1px solid #aaa;
   border-radius: 3px;
@@ -164,13 +163,13 @@ div.rte-text-editor:focus {
   overflow: hidden;
 }
 
-.popup::before {
+.rte-popup::before {
   border-color: #aaa transparent transparent transparent;
   border-width: 9px;
   margin-left: -9px;
 }
 
-.popup::after {
+.rte-popup::after {
   border-color: white transparent transparent transparent;
   border-width: 8px;
   margin-left: -8px;

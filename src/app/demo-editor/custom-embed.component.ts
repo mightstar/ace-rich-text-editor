@@ -1,18 +1,9 @@
-import { CommonModule } from '@angular/common';
 import {
     Component,
-    Directive,
     ElementRef,
-    EventEmitter,
-    HostBinding,
-    HostListener,
     Input,
-    OnChanges,
-    Output,
-    Renderer2,
     ViewChild, Pipe, PipeTransform,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Pipe({ name: 'safeDOM', standalone: true })
@@ -40,14 +31,6 @@ export class CustomEmbedComponent {
 
     constructor() { }
 
-
-
     ngAfterViewChecked() {
-        // this.contentElement.nativeElement.innerHTML = this.content;
-
-
-
     }
-
-
 }
