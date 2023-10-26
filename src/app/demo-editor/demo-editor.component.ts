@@ -1,6 +1,6 @@
 import { Component, ViewChild, ViewEncapsulation, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkRichTextEditorComponent, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
+import { CdkEditAction, CdkRichTextEditorComponent, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
 import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion.component';
 import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
 import { CustomEmbedComponent } from './custom-embed.component';
+import { RichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor.component';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -48,7 +49,7 @@ export class SafeUrlPipe implements PipeTransform {
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [SafeUrlPipe, CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, UnusualInlineComponent, FormsModule, CommonModule, CustomEmbedComponent],
+  imports: [SafeUrlPipe, CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true,
   encapsulation: ViewEncapsulation.None
@@ -67,7 +68,17 @@ export class DemoEditorComponent {
   @ViewChild('hashtagSelectionTemplate', { read: TemplateRef, static: true })
   hashtagSelectionTemplate!: TemplateRef<any>;
 
+  @ViewChild('editor', {read: CdkRichTextEditorComponent, static: true})
+  editor! : CdkRichTextEditorComponent;
+
+  onBtnClick = (action: CdkEditAction) => {
+
+    this.editor.triggerToolbar({action: action});
+  }
+
   handleContent = (content: string) => {
+
+    console.log('content :>> ', content);
     this.embedContent = content;
   }
 
@@ -142,4 +153,6 @@ export class DemoEditorComponent {
   suggestionEnabled = true;
 
   embedContent = "";
+
+  initialContent = '<div>I am testing loading hashtags. <span> This is  <span> span tag.</span>This element contains #####<span>HASHTAG</span>##### node.</span>I am gonna change this hashtag value to Component</div>';
 }

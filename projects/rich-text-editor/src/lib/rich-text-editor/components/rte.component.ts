@@ -6,6 +6,9 @@ import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from '
 import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty } from '../utils/DOM';
 import { TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
+import { HashtagComponent } from './hashtag/hashtag.component';
+
+
 
 interface ToolbarItem {
   action: string,
@@ -13,7 +16,7 @@ interface ToolbarItem {
   active: boolean,
   payload?: any,
 }
-type CdkEditAction = "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "quote" | "component" | "image" | "bold" | "italic" | "underline" | "code" | "ordered-list" | "numbered-list";
+export type CdkEditAction = "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "quote" | "component" | "image" | "bold" | "italic" | "underline" | "code" | "ordered-list" | "numbered-list";
 
 export interface CdkToolbarItemSetting {
   action: CdkEditAction,
@@ -59,6 +62,9 @@ export class CdkRichTextEditorComponent implements OnInit {
 
   @Input('cdkImageUploadUrl')
   imageUploadUrl!: string;
+
+  @Input('cdkContent')
+  content: string = "";
 
   @Output('cdkEditorSelectionChanged')
   selectionChanged = new EventEmitter<Selection>();
@@ -361,7 +367,9 @@ export class CdkRichTextEditorComponent implements OnInit {
   insertComponent(componentName: Type<Component>) {
     const selection = window.getSelection();
     if (selection && selection.anchorNode) {
-      const componentRef = this.richTextContainer.createComponent(componentName);
+      const componentRef = this.richTextContainer.createComponent(componentName, {
+        projectableNodes: [[selection.getRangeAt(0).extractContents()]]
+      });
       const range = selection.getRangeAt(0);
       range.insertNode(componentRef.location.nativeElement);
     }
@@ -531,7 +539,7 @@ export class CdkRichTextEditorComponent implements OnInit {
     }
   }
 
-  onToolbarItemClick(event: Event, item: ToolbarItem) {
+  clickToolbarItem(item: ToolbarItem) {
     if (item.action == 'component') {
       if (item.payload) {
         let component: Type<Component> = item.payload;
@@ -545,6 +553,21 @@ export class CdkRichTextEditorComponent implements OnInit {
       this.toggleFormat(item.action);
       item.active = this.isFormatActive(item.action);
     }
+  }
+  triggerToolbar(item: CdkToolbarItemSetting) {
+    if (item.action == 'component') {
+      if (item.payload) {
+        let component: Type<Component> = item.payload;
+        this.toggleComponent(component);
+      }
+    } else if (item.action == 'image') {
+      this.handleClickAddImage();
+    }
+    else {
+      this.toggleFormat(item.action);
+    }
+
+    this.updateToolbar();
   }
 
   ngAfterContentChecked() {
@@ -567,6 +590,118 @@ export class CdkRichTextEditorComponent implements OnInit {
         }
       }
     }
+  }
+
+  ngAfterViewInit() {
+    console.log('loading content');
+
+    this.loadContent();
+
+    console.log('loading finished');
+  }
+
+  isHashtagElement(element: Element, pattern: RegExp): boolean {
+
+    console.log('element.firstChild?.textContent :>> ', element.firstChild?.textContent);
+
+    let textNodes: Text[] = [];
+    element.childNodes.forEach(child => {
+      if (child.nodeType == Node.TEXT_NODE) {
+        textNodes.push(child as Text);
+      }
+    });
+
+    let text = textNodes.map(textNode => textNode.textContent).join('');
+
+    if (text.match(pattern)) {
+      console.log('element :>> ', element);
+
+      return true;
+
+    }
+    return false;
+  }
+
+  findTextNodes(element: Element, pattern: string): Array<{ text: Text, index: number }> {
+    let textNodes: Array<{ text: Text, index: number }> = [];
+    let index = 0;
+    element.childNodes.forEach(child => {
+
+      if (child.nodeType == Node.TEXT_NODE && child.textContent && (index = child.textContent.indexOf(pattern)) !== -1) {
+        textNodes.push({ index, text: child as Text });
+      }
+    });
+
+    return textNodes;
+  }
+
+  loadContent = () => {
+
+    const selection = window.getSelection();
+    if (selection == null) {
+      return;
+    }
+
+    this.richText.nativeElement.innerHTML = this.content;
+    const nodes: Element[] = [];
+    const elements = this.richText.nativeElement.querySelectorAll('*'); // Select all elements
+
+
+    const pattern = /#####(.*?)#####/;
+
+    if (this.richText.nativeElement.firstChild?.textContent?.match(pattern)) {
+
+    }
+    if (this.isHashtagElement(this.richText.nativeElement, pattern)) {
+      nodes.push(this.richText.nativeElement);
+
+    }
+    elements.forEach(element => {
+
+      if (this.isHashtagElement(element, pattern)) {
+        nodes.push(element);
+      }
+
+    });
+
+    console.log('nodes.length :>> ', nodes.length);
+
+    for (let node of nodes) {
+
+      let textNodes = this.findTextNodes(node, '#####');
+      const startNode = textNodes[0].text;
+      const startIndex = textNodes[0].index + '#####'.length;
+      const endNode = textNodes[textNodes.length - 1].text;
+      const endIndex = textNodes[textNodes.length - 1].index;
+
+      const range = document.createRange();
+      // const documentFragment = document.createDocumentFragment();
+
+
+      range.selectNodeContents(node);
+      range.setStart(startNode, startIndex);
+      range.setEnd(endNode, endIndex);
+
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+
+      this.insertComponent(HashtagComponent as Type<Component>);
+      // const text = node.innerHTML;
+
+      // let match = text!.match(pattern);
+
+      // if (match && text && match.index) {
+      //   console.log('match :>> ', match?.[1]);
+
+      //   node.innerHTML = text.substring(0, match.index) + '<h1>' + match?.[1] + '</h1>' + text.substring(match.index + match[0].length);
+      // }
+    }
+
+
+    selection.removeAllRanges();
+
   }
 
 

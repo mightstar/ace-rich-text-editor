@@ -32,5 +32,6 @@ export class CustomEmbedComponent {
     constructor() { }
 
     ngAfterViewChecked() {
+        // console.log('contents :>> ', this.contents);
     }
 }

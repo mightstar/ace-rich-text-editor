@@ -7,7 +7,7 @@
       *ngFor="let item of toolbarItems"
       class="rte-toolbar-btn icon"
       [ngClass]="{ 'rte-active': item.active }"
-      (click)="onToolbarItemClick($event, item)"
+      (click)="clickToolbarItem( item)"
       class="rte-toolbar-btn icon rte-active"
     >
       <span [innerHTML]="item.icon"></span>

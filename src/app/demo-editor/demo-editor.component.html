@@ -1,44 +1,46 @@
 <p>demo-editor works!</p>
 
-
 <ng-template #suggestionItemTemplate let-value let-active="active">
-    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
-    </div>
+  <div class="suggestion-item" [class.selected]="active">
+    <b>{{ value }}</b>
+  </div>
 </ng-template>
 
 <ng-template #suggestionSelectionTemplate let-value="value">
-    <span contenteditable="false" class="demo-mention-view"><b>@{{value}}</b>
-    </span>
+  <span contenteditable="false" class="demo-mention-view"
+    ><b>@{{ value }}</b>
+  </span>
 </ng-template>
 
 <ng-template #hashtagItemTemplate let-value let-active="active">
-    <div class="suggestion-item" [class.selected]="active"><b>{{value}}</b>
-    </div>
+  <div class="suggestion-item" [class.selected]="active">
+    <b>{{ value }}</b>
+  </div>
 </ng-template>
 
 <ng-template #hashtagSelectionTemplate let-value="value">
-
-    <app-hashtag>
-        #{{value}}
-    </app-hashtag>
+  <app-hashtag> #{{ value }} </app-hashtag>
 </ng-template>
+<h2>(Compare  RTE component with an element below, Both are using same inital innerHTML value)</h2>
+  <div [innerText]="initialContent"></div>
 
+  <button (click)="onBtnClick('bold')">Bold</button>
+  <button (click)="onBtnClick('italic')">Italic</button>
+  <button (click)="onBtnClick('heading1')">Heading1</button>
+
+  <hr />
 <div class="demo-editor">
-    <recruitler-rte #editor  [cdkSuggestionEnabled]="suggestionEnabled"
-        [cdkSuggestions]="suggestions" 
-        [cdkDefaultToolbarItems]="toolbarItems"
-        (cdkContentChanged)="handleContent($event)"
-        >
-        <h1>Apache Superset</h1>
-        Normal Text<br>
-        <b>Bold Text</b><br>
-        <i>Italic Text</i><br>
-        <u>Underline Text</u>
-        <h1>Heading1</h1>
-        <h2>Heading2</h2>
-    </recruitler-rte>
-    <hr/>
-    <h1>Custom Embed with DOM Santanizer</h1>
-    <custom-embed [content]="embedContent">
-    </custom-embed>
+  <recruitler-rte
+    #editor
+    [cdkSuggestionEnabled]="suggestionEnabled"
+    [cdkSuggestions]="suggestions"
+    [cdkDefaultToolbarItems]="toolbarItems"
+    (cdkContentChanged)="handleContent($event)"
+    [cdkContent]="initialContent"
+  >
+    
+  </recruitler-rte>
+  <hr />
+  
+  <custom-embed [content]="''"> </custom-embed>
 </div>
