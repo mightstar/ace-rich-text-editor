@@ -1,8 +1,8 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
-import { CdkSuggestionSetting } from './rte.component';
-import { isRectEmpty } from '../utils/DOM';
+import { isRectEmpty } from '../../utils/DOM';
+import { CdkSuggestionSetting } from '../rte.component';
 
 
 export interface CdkSuggestionItem {
@@ -51,7 +51,9 @@ export class CdkSuggestionComponent {
 
     query = "";
 
-    filter = (query: string, key: string) => {
+    filter! : (query: string, key: string) => boolean;
+
+    defaultFilter = (query: string, key: string) => {
         return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
     }
 
@@ -231,7 +233,9 @@ export class CdkSuggestionComponent {
     setTriggerIndex = (index: number) => {
         this.triggerIndex = index;
         this.itemTemplate = this.suggestionList[index].itemTemplate;
-        this.filter = this.suggestionList[index].queryFilter;
+        this.filter = this.suggestionList[index].queryFilter ?? this.defaultFilter;
+
+        console.log('this.filter :>> ', this.filter);
         this.suggestions = this.suggestionList[index].data;
         this.filterItems("");
         this.selectedIndex = 0;

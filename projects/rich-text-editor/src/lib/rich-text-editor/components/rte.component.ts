@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ViewEncapsulation, OnInit, reflectComponentType, ElementRef, EmbeddedViewRef, EventEmitter, Input, Output, TemplateRef, Type, ViewChild, ViewContainerRef } from '@angular/core';
-import { CircularProgressComponent } from './circular-progressive.component';
-import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion.component';
+import { Component, ElementRef, EmbeddedViewRef, EventEmitter, Input, OnInit, Output, TemplateRef, Type, ViewChild, ViewContainerRef, ViewEncapsulation, reflectComponentType } from '@angular/core';
 import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty } from '../utils/DOM';
 import { TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
-import { HashtagComponent } from './hashtag/hashtag.component';
+import { CircularProgressComponent } from './circular-progressive/circular-progressive.component';
+import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion/suggestion.component';
 
 
 
@@ -25,9 +24,10 @@ export interface CdkToolbarItemSetting {
 
 export interface CdkSuggestionSetting {
   trigger: string,
+  tag: string,
   itemTemplate: TemplateRef<any>,
   selectionTemplate: TemplateRef<any>,
-  queryFilter: (query: string, key: string) => boolean,
+  queryFilter?: (query: string, key: string) => boolean,
   data: CdkSuggestionItem[]
 }
 
@@ -86,6 +86,8 @@ export class CdkRichTextEditorComponent implements OnInit {
   suggestionSelectionTemplate!: TemplateRef<any>;
 
   toolbarItems: ToolbarItem[] = [];
+
+
 
   private _wrapTag(tag: string, classLists: string[]) {
 
@@ -192,7 +194,8 @@ export class CdkRichTextEditorComponent implements OnInit {
       const focusNode = selection.focusNode;
 
       if (focusNode && focusNode instanceof Text && focusNode == startedNode) {
-
+        const suggestion = this.suggestionList[triggerIndex];
+        console.log('focusNode :>> ', focusNode);
         let text = focusNode.textContent;
         let startIndex = 0;
 
@@ -202,13 +205,24 @@ export class CdkRichTextEditorComponent implements OnInit {
 
         focusNode.textContent = text;
         const range = document.createRange();
-        const documentFragment = document.createDocumentFragment();
-        const viewRef: EmbeddedViewRef<Node> = this.suggestionList[triggerIndex].selectionTemplate.createEmbeddedView({ value: item.value });
+        const documentFragment = document.createElement('span');
+        documentFragment.setAttribute('hashtag_component', '' + suggestion.tag);
+        documentFragment.setAttribute('contenteditable', 'false');
 
+        const realHashtag = document.createElement('span');
+        const viewRef: EmbeddedViewRef<Node> = suggestion.selectionTemplate.createEmbeddedView({ value: item.value });
         this.richTextContainer.insert(viewRef);
         for (let node of viewRef.rootNodes) {
-          documentFragment.appendChild(node);
+          realHashtag.appendChild(node);
         }
+
+        const hiddenHashtag = document.createElement('span');
+        hiddenHashtag.setAttribute('hashtag_code', suggestion.tag);
+        hiddenHashtag.style.display = "none";
+        hiddenHashtag.innerHTML = `${suggestion.tag}${JSON.stringify(item.value)}${suggestion.tag}`;
+
+        documentFragment.appendChild(realHashtag);
+        documentFragment.appendChild(hiddenHashtag);
 
         range.selectNodeContents(focusNode);
         range.setStart(focusNode, startIndex);
@@ -222,6 +236,7 @@ export class CdkRichTextEditorComponent implements OnInit {
 
         range.collapse();
 
+
       }
 
     }
@@ -229,7 +244,18 @@ export class CdkRichTextEditorComponent implements OnInit {
   }
 
   private _contentChanged = () => {
-    this.contentChanged.emit(this.richText.nativeElement.innerHTML);
+    const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
+    let hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
+
+    for (let i = 0; i < hashtags.length; i++) {
+      let hidden_tag = hashtags[i].querySelector('span[hashtag_code]');
+      const code = hidden_tag ? hidden_tag.innerHTML : "";
+      const span = document.createElement('span');
+      span.innerHTML = code;
+      hashtags[i].replaceWith(document.createTextNode(code));
+    }
+
+    this.contentChanged.emit(clonedTextNode.innerHTML);
   }
 
   updateToolbar() {
@@ -273,6 +299,15 @@ export class CdkRichTextEditorComponent implements OnInit {
     if (format == 'heading2') {
       return (this._isChildOfTag(selection?.anchorNode, 'h2'));
     }
+    if (format == 'heading3') {
+      return (this._isChildOfTag(selection?.anchorNode, 'h3'));
+    }
+    if (format == 'heading4') {
+      return (this._isChildOfTag(selection?.anchorNode, 'h4'));
+    }
+    if (format == 'heading5') {
+      return (this._isChildOfTag(selection?.anchorNode, 'h5'));
+    }
     if (format == 'quote') {
       return (this._isChildOfTag(selection?.anchorNode, 'blockquote'));
     }
@@ -291,6 +326,15 @@ export class CdkRichTextEditorComponent implements OnInit {
         break;
       case "heading2":
         document.execCommand('formatBlock', false, 'h2');
+        break;
+      case "heading3":
+        document.execCommand('formatBlock', false, 'h3');
+        break;
+      case "heading4":
+        document.execCommand('formatBlock', false, 'h4');
+        break;
+      case "heading5":
+        document.execCommand('formatBlock', false, 'h5');
         break;
       case "code":
         this._wrapTag('code', ['rte-code']);
@@ -320,6 +364,15 @@ export class CdkRichTextEditorComponent implements OnInit {
         break;
       case "heading2":
         selection?.anchorNode && this._untagParent(selection?.anchorNode, 'h2');
+        break;
+      case "heading3":
+        selection?.anchorNode && this._untagParent(selection?.anchorNode, 'h3');
+        break;
+      case "heading4":
+        selection?.anchorNode && this._untagParent(selection?.anchorNode, 'h4');
+        break;
+      case "heading5":
+        selection?.anchorNode && this._untagParent(selection?.anchorNode, 'h5');
         break;
       case "quote":
         selection?.anchorNode && this._untagParent(selection?.anchorNode, 'blockquote');
@@ -553,8 +606,10 @@ export class CdkRichTextEditorComponent implements OnInit {
       this.toggleFormat(item.action);
       item.active = this.isFormatActive(item.action);
     }
+
+    this.updateToolbar();
   }
-  triggerToolbar(item: CdkToolbarItemSetting) {
+  triggerToolbarAction(item: CdkToolbarItemSetting) {
     if (item.action == 'component') {
       if (item.payload) {
         let component: Type<Component> = item.payload;
@@ -602,7 +657,8 @@ export class CdkRichTextEditorComponent implements OnInit {
 
   isHashtagElement(element: Element, pattern: RegExp): boolean {
 
-    console.log('element.firstChild?.textContent :>> ', element.firstChild?.textContent);
+
+
 
     let textNodes: Text[] = [];
     element.childNodes.forEach(child => {
@@ -614,96 +670,119 @@ export class CdkRichTextEditorComponent implements OnInit {
     let text = textNodes.map(textNode => textNode.textContent).join('');
 
     if (text.match(pattern)) {
-      console.log('element :>> ', element);
-
       return true;
-
     }
     return false;
   }
 
   findTextNodes(element: Element, pattern: string): Array<{ text: Text, index: number }> {
     let textNodes: Array<{ text: Text, index: number }> = [];
-    let index = 0;
+    let matches: IterableIterator<RegExpMatchArray> | null = null;
     element.childNodes.forEach(child => {
 
-      if (child.nodeType == Node.TEXT_NODE && child.textContent && (index = child.textContent.indexOf(pattern)) !== -1) {
-        textNodes.push({ index, text: child as Text });
+      if (child.nodeType == Node.TEXT_NODE && child.textContent && (matches = child.textContent.matchAll(new RegExp(pattern, "g")))) {
+
+        for (let match of matches) {
+          match.index !== undefined && textNodes.push({ index: match.index, text: child as Text });
+        }
+
       }
     });
+
+
+
+    (textNodes.length % 2 == 1) && textNodes.pop();
 
     return textNodes;
   }
 
   loadContent = () => {
 
+    console.log('this.content :>> ', this.content);
+    this.richText.nativeElement.innerHTML = this.content;
+    this.suggestionList.forEach(suggestion => this.filterHashtags(suggestion));
+
+
+  }
+
+  filterHashtags = (suggestion: CdkSuggestionSetting) => {
+
     const selection = window.getSelection();
     if (selection == null) {
       return;
     }
+    let hashtag = suggestion.tag;
 
-    this.richText.nativeElement.innerHTML = this.content;
     const nodes: Element[] = [];
     const elements = this.richText.nativeElement.querySelectorAll('*'); // Select all elements
 
+    const pattern = new RegExp(`${hashtag}(.*?)${hashtag}`);
 
-    const pattern = /#####(.*?)#####/;
-
-    if (this.richText.nativeElement.firstChild?.textContent?.match(pattern)) {
-
-    }
     if (this.isHashtagElement(this.richText.nativeElement, pattern)) {
       nodes.push(this.richText.nativeElement);
 
     }
     elements.forEach(element => {
-
       if (this.isHashtagElement(element, pattern)) {
         nodes.push(element);
       }
 
     });
 
-    console.log('nodes.length :>> ', nodes.length);
+    for (let element of nodes) {
+      let textNodes = this.findTextNodes(element, hashtag);
 
-    for (let node of nodes) {
+      for (let i = 0; i < textNodes.length; i += 2) {
+        const startNode = textNodes[i].text;
+        const startIndex = textNodes[i].index + hashtag.length;
+        const endNode = textNodes[i + 1].text;
+        const endIndex = textNodes[i + 1].index;
 
-      let textNodes = this.findTextNodes(node, '#####');
-      const startNode = textNodes[0].text;
-      const startIndex = textNodes[0].index + '#####'.length;
-      const endNode = textNodes[textNodes.length - 1].text;
-      const endIndex = textNodes[textNodes.length - 1].index;
+        const range = document.createRange();
+        // range.selectNodeContents(element);
+        range.setStart(startNode, startIndex);
+        range.setEnd(endNode, endIndex);
 
-      const range = document.createRange();
-      // const documentFragment = document.createDocumentFragment();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        let value = selection.toString();
+
+        const documentFragment = document.createElement('span');
+        documentFragment.setAttribute('hashtag_component', '' + suggestion.tag);
+        documentFragment.setAttribute('contenteditable', 'false');
+
+        const realHashtag = document.createElement('span');
+
+        const hiddenHashtag = document.createElement('span');
+        hiddenHashtag.style.display = "none";
+        hiddenHashtag.setAttribute('hashtag_code', suggestion.tag);
+        hiddenHashtag.innerHTML = `${suggestion.tag}${value}${suggestion.tag}`;
+        const viewRef: EmbeddedViewRef<Node> = suggestion.selectionTemplate.createEmbeddedView({ value: JSON.parse(value) });
+        this.richTextContainer.insert(viewRef);
+
+        for (let node of viewRef.rootNodes) {
+          realHashtag.appendChild(node);
+        }
+
+        documentFragment.appendChild(realHashtag);
+        documentFragment.appendChild(hiddenHashtag);
+
+        range.extractContents();
+        range.insertNode(documentFragment);
 
 
-      range.selectNodeContents(node);
-      range.setStart(startNode, startIndex);
-      range.setEnd(endNode, endIndex);
+        textNodes = this.findTextNodes(element, hashtag);
+      }
 
-
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-
-      this.insertComponent(HashtagComponent as Type<Component>);
-      // const text = node.innerHTML;
-
-      // let match = text!.match(pattern);
-
-      // if (match && text && match.index) {
-      //   console.log('match :>> ', match?.[1]);
-
-      //   node.innerHTML = text.substring(0, match.index) + '<h1>' + match?.[1] + '</h1>' + text.substring(match.index + match[0].length);
-      // }
+      this.findTextNodes(element, hashtag).forEach(item => item.text.textContent && (item.text.textContent = item.text.textContent?.replaceAll(hashtag, '')));
     }
-
-
     selection.removeAllRanges();
-
   }
 
+  getAllHashtags() {
+
+  }
 
   constructor(
     private http: HttpClient,

@@ -52,9 +52,19 @@
 
   img {
   }
+
+  a, abbr, b, button, br, button, cite, code, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
+    display: inline ;
+  }
+
+  div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
+    display: block ;
+  }
+
 }
 
 .rte-wrapper {
+  display: block;
   position: relative;
   width: 100%;
   height: 100%;
@@ -116,6 +126,7 @@ div.rte-text-editor:focus {
 }
 
 .rte-quick-toolbar {
+  display: block;
   position: absolute;
   top: 0;
   z-index: -1;

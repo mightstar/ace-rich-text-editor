@@ -21,13 +21,14 @@
 <ng-template #hashtagSelectionTemplate let-value="value">
   <app-hashtag> #{{ value }} </app-hashtag>
 </ng-template>
-<h2>(Compare  RTE component with an element below, Both are using same inital innerHTML value)</h2>
-  <div [innerText]="initialContent"></div>
+<h2>From a text below To RTE content</h2>
+  <div [innerText]="content"></div>
 
   <button (click)="onBtnClick('bold')">Bold</button>
   <button (click)="onBtnClick('italic')">Italic</button>
   <button (click)="onBtnClick('heading1')">Heading1</button>
 
+  <button (click)="preloadContent()" style="float: right;">Preload</button>
   <hr />
 <div class="demo-editor">
   <recruitler-rte
@@ -36,11 +37,12 @@
     [cdkSuggestions]="suggestions"
     [cdkDefaultToolbarItems]="toolbarItems"
     (cdkContentChanged)="handleContent($event)"
-    [cdkContent]="initialContent"
+    [cdkContent]="content"
   >
     
   </recruitler-rte>
+  
   <hr />
   
-  <custom-embed [content]="''"> </custom-embed>
+  <custom-embed [content]="embedContent" style="margin: 5px;"> </custom-embed>
 </div>

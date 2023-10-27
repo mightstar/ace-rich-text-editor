@@ -1,7 +1,7 @@
 import { Component, ViewChild, ViewEncapsulation, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkEditAction, CdkRichTextEditorComponent, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
-import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion.component';
+import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion/suggestion.component';
 import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormsModule } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
@@ -73,13 +73,16 @@ export class DemoEditorComponent {
 
   onBtnClick = (action: CdkEditAction) => {
 
-    this.editor.triggerToolbar({action: action});
+    this.editor.triggerToolbarAction({action: action});
   }
 
   handleContent = (content: string) => {
-
     console.log('content :>> ', content);
     this.embedContent = content;
+  }
+
+  preloadContent = () => {
+    this.content = this.embedContent;
   }
 
   filter = (query: string, key: string) => {
@@ -87,9 +90,11 @@ export class DemoEditorComponent {
   }
 
   ngAfterContentChecked() {
+    
     this.suggestions = [
       {
         trigger: "@",
+        tag: '-@@-',
         itemTemplate: this.suggestionItemTemplate,
         selectionTemplate: this.suggestionSelectionTemplate,
         data: [{
@@ -105,6 +110,7 @@ export class DemoEditorComponent {
       },
       {
         trigger: "#",
+        tag: '-##-',
         itemTemplate: this.hashtagItemTemplate,
         selectionTemplate: this.hashtagSelectionTemplate,
         data: [{
@@ -154,5 +160,5 @@ export class DemoEditorComponent {
 
   embedContent = "";
 
-  initialContent = '<div>I am testing loading hashtags. <span> This is  <span> span tag.</span>This element contains #####<span>HASHTAG</span>##### node.</span>I am gonna change this hashtag value to Component</div>';
+  content = '<div>I am -@@-"testing"-@@- loading hashtags. <span> This is  <span> span tag.</span>This element contains -##-"HASHTAG"-##- node.</span> -##-"HASHTAG"-##-I am gonna change this hashtag value to Component</div>';
 }

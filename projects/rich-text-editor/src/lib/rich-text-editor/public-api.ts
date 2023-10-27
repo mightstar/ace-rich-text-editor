@@ -8,4 +8,4 @@
 
 export * from './components/rte.component';
 export * from './components/rte.service';
-export * from './components/suggestion.component';
+export * from './components/suggestion/suggestion.component';

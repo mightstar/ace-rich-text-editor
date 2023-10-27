@@ -50,3 +50,12 @@
     border: 2px solid #ddd;
     background: #fafafa;
 }
+
+.suggestion-item {
+    &.selected {
+        background-color: rgb(251, 255, 0);
+    }
+    &:hover {
+        background-color: rgb(0, 128, 11);
+    }
+}

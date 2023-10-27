@@ -33,15 +33,15 @@ export const TOOLBAR_ITEMS = [
     icon: 'H2',
   },
   {
-    action: 'heading2',
+    action: 'heading3',
     icon: 'H3',
   },
   {
-    action: 'heading2',
+    action: 'heading4',
     icon: 'H4',
   },
   {
-    action: 'heading2',
+    action: 'heading5',
     icon: 'H5',
   },
   {
