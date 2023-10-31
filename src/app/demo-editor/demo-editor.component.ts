@@ -5,7 +5,7 @@ import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-e
 import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormsModule } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
 import { CustomEmbedComponent } from './custom-embed.component';
@@ -36,20 +36,12 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 })
 export class UnusualInlineComponent { }
 
-@Pipe({ name: 'SafeURL', standalone: true })
-export class SafeUrlPipe implements PipeTransform {
-  constructor(private sanitizer: DomSanitizer) {
-  }
 
-  public transform(url: string) {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  }
-}
 
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [SafeUrlPipe, CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
+  imports: [ CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true,
   encapsulation: ViewEncapsulation.None
@@ -78,7 +70,7 @@ export class DemoEditorComponent {
 
   handleContent = (content: string) => {
     console.log('content :>> ', content);
-    this.embedContent = content;
+    // this.embedContent = content;
   }
 
   preloadContent = () => {
@@ -160,5 +152,5 @@ export class DemoEditorComponent {
 
   embedContent = "";
 
-  content = '<div>I am -@@-"testing"-@@- loading hashtags. <span> This is  <span> span tag.</span>This element contains -##-"HASHTAG"-##- node.</span> -##-"HASHTAG"-##-I am gonna change this hashtag value to Component</div>';
+  content = '';
 }

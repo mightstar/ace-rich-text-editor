@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, EmbeddedViewRef, EventEmitter, Input, OnInit, Output, TemplateRef, Type, ViewChild, ViewContainerRef, ViewEncapsulation, reflectComponentType } from '@angular/core';
-import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty } from '../utils/DOM';
+import { Component, ElementRef, EmbeddedViewRef, Injectable, EventEmitter, Input, OnInit, Output, Pipe, PipeTransform, TemplateRef, Type, ViewChild, ViewContainerRef, ViewEncapsulation, reflectComponentType } from '@angular/core';
+import { findTextNodes, focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty } from '../utils/DOM';
 import { TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
 import { CircularProgressComponent } from './circular-progressive/circular-progressive.component';
 import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion/suggestion.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 
 
@@ -30,12 +31,23 @@ export interface CdkSuggestionSetting {
   queryFilter?: (query: string, key: string) => boolean,
   data: CdkSuggestionItem[]
 }
+@Injectable()
+@Pipe({ name: 'safeDOM', standalone: true, })
+export class SafeDOMPipe implements PipeTransform {
+  constructor(private sanitizer: DomSanitizer) {
+  }
+
+  public transform(embedContent: string) {
+    return this.sanitizer.bypassSecurityTrustHtml(embedContent);
+  }
+}
 
 @Component({
   selector: 'recruitler-rte',
   templateUrl: './rte.component.html',
   styleUrls: ['./rte.component.scss'],
   imports: [CommonModule, CdkSuggestionComponent, CircularProgressComponent],
+  providers: [SafeDOMPipe],
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
@@ -77,6 +89,9 @@ export class CdkRichTextEditorComponent implements OnInit {
 
   @Output()
   blur = new EventEmitter();
+
+
+  private _currentContent: string = '';
 
 
   isSuggestionVisible: boolean = false;
@@ -255,7 +270,12 @@ export class CdkRichTextEditorComponent implements OnInit {
       hashtags[i].replaceWith(document.createTextNode(code));
     }
 
-    this.contentChanged.emit(clonedTextNode.innerHTML);
+    this._currentContent = clonedTextNode.innerHTML;
+    // this.loadContent(this._currentContent);
+    const html = this.domSantanizer.transform(clonedTextNode.innerHTML).toString();
+
+    if (html.startsWith('SafeValue must use')) this.contentChanged.emit(html.substring(39, html.length - 35));
+    else this.contentChanged.emit(html);
   }
 
   updateToolbar() {
@@ -407,6 +427,8 @@ export class CdkRichTextEditorComponent implements OnInit {
       this._contentChanged();
     }
   }
+
+
 
   toggleComponent(componentName: Type<Component>) {
     if (!this.isComponentActive(componentName)) {
@@ -650,15 +672,12 @@ export class CdkRichTextEditorComponent implements OnInit {
   ngAfterViewInit() {
     console.log('loading content');
 
-    this.loadContent();
+    this.loadContent(this.content);
 
     console.log('loading finished');
   }
 
   isHashtagElement(element: Element, pattern: RegExp): boolean {
-
-
-
 
     let textNodes: Text[] = [];
     element.childNodes.forEach(child => {
@@ -675,34 +694,11 @@ export class CdkRichTextEditorComponent implements OnInit {
     return false;
   }
 
-  findTextNodes(element: Element, pattern: string): Array<{ text: Text, index: number }> {
-    let textNodes: Array<{ text: Text, index: number }> = [];
-    let matches: IterableIterator<RegExpMatchArray> | null = null;
-    element.childNodes.forEach(child => {
-
-      if (child.nodeType == Node.TEXT_NODE && child.textContent && (matches = child.textContent.matchAll(new RegExp(pattern, "g")))) {
-
-        for (let match of matches) {
-          match.index !== undefined && textNodes.push({ index: match.index, text: child as Text });
-        }
-
-      }
-    });
 
 
-
-    (textNodes.length % 2 == 1) && textNodes.pop();
-
-    return textNodes;
-  }
-
-  loadContent = () => {
-
-    console.log('this.content :>> ', this.content);
-    this.richText.nativeElement.innerHTML = this.content;
+  loadContent = (content: string) => {
+    this.richText.nativeElement.innerHTML = content;
     this.suggestionList.forEach(suggestion => this.filterHashtags(suggestion));
-
-
   }
 
   filterHashtags = (suggestion: CdkSuggestionSetting) => {
@@ -726,11 +722,10 @@ export class CdkRichTextEditorComponent implements OnInit {
       if (this.isHashtagElement(element, pattern)) {
         nodes.push(element);
       }
-
     });
 
     for (let element of nodes) {
-      let textNodes = this.findTextNodes(element, hashtag);
+      let textNodes = findTextNodes(element, hashtag);
 
       for (let i = 0; i < textNodes.length; i += 2) {
         const startNode = textNodes[i].text;
@@ -770,12 +765,10 @@ export class CdkRichTextEditorComponent implements OnInit {
 
         range.extractContents();
         range.insertNode(documentFragment);
-
-
-        textNodes = this.findTextNodes(element, hashtag);
+        textNodes = findTextNodes(element, hashtag);
       }
 
-      this.findTextNodes(element, hashtag).forEach(item => item.text.textContent && (item.text.textContent = item.text.textContent?.replaceAll(hashtag, '')));
+      textNodes.forEach(item => item.text.textContent && (item.text.textContent = item.text.textContent?.replaceAll(hashtag, '')));
     }
     selection.removeAllRanges();
   }
@@ -786,6 +779,7 @@ export class CdkRichTextEditorComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
+    private domSantanizer: SafeDOMPipe
   ) {
     this.toolbarItems = TOOLBAR_ITEMS.map(item => ({ action: item.action, icon: item.icon, active: false })).filter(item => item.action !== 'component');
   }

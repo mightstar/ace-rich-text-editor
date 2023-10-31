@@ -43,3 +43,21 @@ export function getRangeFromPosition(x: number, y: number): Range | null {
 }
 
 
+export function findTextNodes(element: Element, pattern: string): Array<{ text: Text, index: number }> {
+    let textNodes: Array<{ text: Text, index: number }> = [];
+    let matches: IterableIterator<RegExpMatchArray> | null = null;
+    element.childNodes.forEach(child => {
+
+      if (child.nodeType == Node.TEXT_NODE && child.textContent && (matches = child.textContent.matchAll(new RegExp(pattern, "g")))) {
+
+        for (let match of matches) {
+          match.index !== undefined && textNodes.push({ index: match.index, text: child as Text });
+        }
+
+      }
+    });
+
+    (textNodes.length % 2 == 1) && textNodes.pop();
+
+    return textNodes;
+  }
