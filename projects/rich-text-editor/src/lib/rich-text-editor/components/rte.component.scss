@@ -76,7 +76,7 @@ div.rte-text-editor {
   width: 100%;
   padding: 12px;
   overflow: auto;
-  background-color: white;
+  background-color: inherit;
   border: none;
 }
 
@@ -84,6 +84,17 @@ div.rte-text-editor:focus {
   box-shadow: none;
   border: 0px;
   outline: 0px solid transparent !important;
+}
+
+/* ------------------------------------------------------------------------ *
+  CSS only placeholder for contenteditable
+* ------------------------------------------------------------------------ */
+[contenteditable='true']:empty:before {
+  content: attr(placeholder);
+  pointer-events: none;
+  display: block; /* For Firefox */
+  color: rgb(var(--body-text));
+  // opacity: 0.65;
 }
 
 .rte-uploading-progress {
@@ -136,7 +147,7 @@ div.rte-text-editor:focus {
 
 .rte-quick-toolbar.rte-show {
   opacity: 0.8;
-  z-index: 5;
+  z-index: 99999;
 }
 
 .rte-quick-toolbar.rte-show:hover {

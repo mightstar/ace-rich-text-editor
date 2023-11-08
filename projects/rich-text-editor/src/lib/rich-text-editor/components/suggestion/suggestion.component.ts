@@ -26,7 +26,7 @@ export interface CdkSuggestionSelect {
 
 export class CdkSuggestionComponent {
 
-    @Input('cdkSuggestionList') suggestionList!: CdkSuggestionSetting[];
+    @Input('getSuggestionList') getSuggestionList: (tag: string) => Promise<CdkSuggestionSetting>;
     @Output('cdkSuggestionSelected') select = new EventEmitter<CdkSuggestionSelect>();
 
     @ViewChild('container') container!: ElementRef<HTMLElement>;
@@ -56,6 +56,8 @@ export class CdkSuggestionComponent {
     defaultFilter = (query: string, key: string) => {
         return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
     }
+
+
 
     private _moveSelected = (step: number): boolean => {
 
@@ -230,13 +232,12 @@ export class CdkSuggestionComponent {
     }
 
 
-    setTriggerIndex = (index: number) => {
-        this.triggerIndex = index;
-        this.itemTemplate = this.suggestionList[index].itemTemplate;
-        this.filter = this.suggestionList[index].queryFilter ?? this.defaultFilter;
+    setTrigger = (suggestion: CdkSuggestionSetting) => {
+        this.itemTemplate = suggestion.itemTemplate;
+        this.filter = suggestion.queryFilter ?? this.defaultFilter;
 
         console.log('this.filter :>> ', this.filter);
-        this.suggestions = this.suggestionList[index].data;
+        this.suggestions = suggestion.data;
         this.filterItems("");
         this.selectedIndex = 0;
     }
@@ -244,12 +245,13 @@ export class CdkSuggestionComponent {
     onValueChange = (event: Event) => {
         let ev = event as InputEvent;
         if (ev.data && (this.isVisible === false || this.isVisible && this.filteredSuggestions.length == 0)) {
-            const listIndex = this.suggestionList.findIndex(item => item.trigger == ev.data)
-            if (listIndex >= 0 && listIndex < this.suggestionList.length) {
-                this.show(false);
-                this.setTriggerIndex(listIndex);
-                return this.show(true);
-            }
+            this.getSuggestionList(ev.data).then(suggestion => {
+              this.show(false);
+              this.setTrigger(suggestion);
+              return this.show(true);
+            }).catch(reason =>{
+              console.log(reason);
+            })
         }
         if (this.isVisible) {
             this._updateQuery();

@@ -27,7 +27,7 @@
   </div>
   <rte-suggestion
     #suggestion
-    [cdkSuggestionList]="suggestionList"
+    [getSuggestionList]="getSuggestionList"
     (cdkSuggestionSelected)="onSuggestionSelected($event)"
   >
   </rte-suggestion>
@@ -37,6 +37,8 @@
     class="rte-text-editor"
     [contentEditable]="true"
     (mousedown)="onMouseDown($event)"
+    [attr.placeholder]="placeholder"
+
     (focus)="onFocusIn()"
     (blur)="onFocusOut()"
     (keydown)="onKeyDown($event)"

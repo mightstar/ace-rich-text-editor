@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, ElementRef, EmbeddedViewRef, Injectable, EventEmitter, Input, OnInit, Output, Pipe, PipeTransform, TemplateRef, Type, ViewChild, ViewContainerRef, ViewEncapsulation, reflectComponentType } from '@angular/core';
-import { findTextNodes, focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty } from '../utils/DOM';
-import { TOOLBAR_ITEMS } from '../utils/config';
+import { Component, ElementRef, EmbeddedViewRef, EventEmitter, Injectable, Input, OnInit, Output, Pipe, PipeTransform, SimpleChanges, TemplateRef, Type, ViewChild, ViewContainerRef, ViewEncapsulation, reflectComponentType } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+
+import { BehaviorSubject, take } from 'rxjs';
+import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
+import { HASHTAG, HASHTAG_TRIGGER, TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
 import { CircularProgressComponent } from './circular-progressive/circular-progressive.component';
 import { CdkSuggestionComponent, CdkSuggestionItem, CdkSuggestionSelect } from './suggestion/suggestion.component';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
-
 
 interface ToolbarItem {
   action: string,
@@ -16,6 +17,7 @@ interface ToolbarItem {
   active: boolean,
   payload?: any,
 }
+
 export type CdkEditAction = "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "quote" | "component" | "image" | "bold" | "italic" | "underline" | "code" | "ordered-list" | "numbered-list";
 
 export interface CdkToolbarItemSetting {
@@ -47,11 +49,15 @@ export class SafeDOMPipe implements PipeTransform {
   templateUrl: './rte.component.html',
   styleUrls: ['./rte.component.scss'],
   imports: [CommonModule, CdkSuggestionComponent, CircularProgressComponent],
-  providers: [SafeDOMPipe],
+  providers: [SafeDOMPipe, {
+      provide: NG_VALUE_ACCESSOR,
+      multi:true,
+      useExisting: CdkRichTextEditorComponent
+    }],
   standalone: true,
   encapsulation: ViewEncapsulation.None
 })
-export class CdkRichTextEditorComponent implements OnInit {
+export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit {
   @ViewChild('templates') templates!: ElementRef<HTMLElement>;
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
@@ -66,23 +72,35 @@ export class CdkRichTextEditorComponent implements OnInit {
   @Input('cdkDefaultToolbarItems')
   defaultToolbarItems!: CdkToolbarItemSetting[];
 
+  @Input('hashtagItemTemplate')
+  hashtagItemTemplate!: TemplateRef<any>;
+
+  @Input('hashtagTemplate')
+  hashtagTemplate!: TemplateRef<any>;
+
   @Input('cdkSuggestions')
-  suggestionList: CdkSuggestionSetting[] = [];
+  suggestions: CdkSuggestionSetting[] = [];
 
   @Input('cdkSuggestionEnabled')
   suggestionEnabled: boolean = true;
 
-  @Input('cdkImageUploadUrl')
-  imageUploadUrl!: string;
-
   @Input('cdkContent')
   content: string = "";
 
+  @Input('hashtagResults')
+  hashtagResults: CdkSuggestionItem[] = [];
+
+  @Output('uploadImageRequest')
+  uploadImageRequest = new EventEmitter<{file: File, elem: any}>();
+
+  @Input('uploadImageResult')
+  uploadImageResult: {url: string, elem: any} = undefined;
+
+  @Output('hashtagRequest')
+  hashtagRequest = new EventEmitter<string>();
+
   @Output('cdkEditorSelectionChanged')
   selectionChanged = new EventEmitter<Selection>();
-
-  @Output('cdkContentChanged')
-  contentChanged = new EventEmitter<string>();
 
   @Output()
   focus = new EventEmitter();
@@ -90,9 +108,16 @@ export class CdkRichTextEditorComponent implements OnInit {
   @Output()
   blur = new EventEmitter();
 
+  @Input() placeholder: string;
+
+  suggestionList$: BehaviorSubject<CdkSuggestionItem[]> = new BehaviorSubject<CdkSuggestionItem[]>([]);
 
   private _currentContent: string = '';
 
+  onChange = (value) => {};
+  onTouched = () => {};
+  touched = false;
+  disabled = false;
 
   isSuggestionVisible: boolean = false;
 
@@ -101,8 +126,6 @@ export class CdkRichTextEditorComponent implements OnInit {
   suggestionSelectionTemplate!: TemplateRef<any>;
 
   toolbarItems: ToolbarItem[] = [];
-
-
 
   private _wrapTag(tag: string, classLists: string[]) {
 
@@ -209,8 +232,6 @@ export class CdkRichTextEditorComponent implements OnInit {
       const focusNode = selection.focusNode;
 
       if (focusNode && focusNode instanceof Text && focusNode == startedNode) {
-        const suggestion = this.suggestionList[triggerIndex];
-        console.log('focusNode :>> ', focusNode);
         let text = focusNode.textContent;
         let startIndex = 0;
 
@@ -221,20 +242,20 @@ export class CdkRichTextEditorComponent implements OnInit {
         focusNode.textContent = text;
         const range = document.createRange();
         const documentFragment = document.createElement('span');
-        documentFragment.setAttribute('hashtag_component', '' + suggestion.tag);
+        documentFragment.setAttribute('hashtag_component', '' + HASHTAG);
         documentFragment.setAttribute('contenteditable', 'false');
 
         const realHashtag = document.createElement('span');
-        const viewRef: EmbeddedViewRef<Node> = suggestion.selectionTemplate.createEmbeddedView({ value: item.value });
+        const viewRef: EmbeddedViewRef<Node> = this.hashtagTemplate.createEmbeddedView({ value: item.value });
         this.richTextContainer.insert(viewRef);
         for (let node of viewRef.rootNodes) {
           realHashtag.appendChild(node);
         }
 
         const hiddenHashtag = document.createElement('span');
-        hiddenHashtag.setAttribute('hashtag_code', suggestion.tag);
+        hiddenHashtag.setAttribute('hashtag_code', HASHTAG);
         hiddenHashtag.style.display = "none";
-        hiddenHashtag.innerHTML = `${suggestion.tag}${JSON.stringify(item.value)}${suggestion.tag}`;
+        hiddenHashtag.innerHTML = `${HASHTAG}${JSON.stringify(item.value)}${HASHTAG}`;
 
         documentFragment.appendChild(realHashtag);
         documentFragment.appendChild(hiddenHashtag);
@@ -260,22 +281,26 @@ export class CdkRichTextEditorComponent implements OnInit {
 
   private _contentChanged = () => {
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
-    let hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
+    const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
+    hashtags.forEach(hashtag => {
+      console.log('hashtag :>> ', hashtag);
+      if (hashtag.children.length == 2) {
+        const textNode = document.createTextNode(hashtag.children[1].innerHTML);
+        hashtag.replaceWith(textNode);
+      }
 
-    for (let i = 0; i < hashtags.length; i++) {
-      let hidden_tag = hashtags[i].querySelector('span[hashtag_code]');
-      const code = hidden_tag ? hidden_tag.innerHTML : "";
-      const span = document.createElement('span');
-      span.innerHTML = code;
-      hashtags[i].replaceWith(document.createTextNode(code));
-    }
+    });
 
-    this._currentContent = clonedTextNode.innerHTML;
-    // this.loadContent(this._currentContent);
     const html = this.domSantanizer.transform(clonedTextNode.innerHTML).toString();
 
-    if (html.startsWith('SafeValue must use')) this.contentChanged.emit(html.substring(39, html.length - 35));
-    else this.contentChanged.emit(html);
+    if (html.startsWith('SafeValue must use')) {
+      this.onChange(html.substring(39, html.length - 35))
+    }
+    else {
+      this.onChange(html)
+    }
+
+    clonedTextNode.remove();
   }
 
   updateToolbar() {
@@ -412,20 +437,23 @@ export class CdkRichTextEditorComponent implements OnInit {
     }
   }
 
-  insertImage(url: string, width: number, height: number) {
+  insertImage(url: string, width: number, height: number): {id:string, elem: HTMLImageElement} {
 
     let selection = window.getSelection();
+    let id = "";
+    let elem = undefined;
     if (selection && selection.rangeCount > 0) {
-      let img = document.createElement('img');
-      img.src = url;
+      elem = document.createElement('img');
+      elem.id = id;
+      elem.src = url;
       // img.width = width;
       // img.height = height;
-
       const range = selection.getRangeAt(0);
-      range.insertNode(img);
+      range.insertNode(elem);
 
       this._contentChanged();
     }
+    return {id, elem};
   }
 
 
@@ -542,6 +570,30 @@ export class CdkRichTextEditorComponent implements OnInit {
     this._contentChanged();
   }
 
+  getSuggestionList = (tag: string) => {
+    return new Promise<CdkSuggestionSetting>((resolve, reject) => {
+      if ( tag != HASHTAG_TRIGGER ) {
+        reject("Unknown tag: " + tag);
+        return;
+      }
+      this.suggestionList$.pipe(take(1)).subscribe(
+        (hashtagList) => {
+          if ( hashtagList ) {
+            resolve({
+              data: hashtagList,
+              tag: HASHTAG,
+              itemTemplate: this.hashtagItemTemplate,
+              selectionTemplate: this.hashtagTemplate,
+              trigger: HASHTAG_TRIGGER
+            });
+          } else {
+            reject("");
+          }
+        }
+      );
+    });
+  }
+
   onSuggestionSelected = (event: CdkSuggestionSelect) => {
     if (this.suggestionEnabled) {
       this.suggestion.currentRange && focusElementWithRangeIfNotFocused(this.richText.nativeElement, this.suggestion.currentRange);
@@ -562,36 +614,30 @@ export class CdkRichTextEditorComponent implements OnInit {
       const formData = new FormData();
       file && formData.append('photo', file, file.name);
 
-      const loadDataURI = () => {
+      if (this.uploadImageRequest) {
+        this.isUploading = true;
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
+            let id: string;
+            let elem: HTMLImageElement;
             range && focusElementWithRange(this.richText.nativeElement, range);
-            range && this.insertImage(dataURI.toString(), 500, 500);
+            range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
             range && this._contentChanged();
-            this.isUploading = false;
-
+            this.uploadImageRequest.emit({file, elem});
+          }, 10);
+        });
+      } else {
+        file && loadImage(file, (dataURI: string) => {
+          setTimeout(() => {
+            let id: string;
+            let elem: HTMLImageElement;
+            range && focusElementWithRange(this.richText.nativeElement, range);
+            range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
+            range && this._contentChanged();
           }, 10);
         });
       }
 
-      this.isUploading = true;
-
-      if (this.imageUploadUrl)
-        this.http.post(this.imageUploadUrl, formData).subscribe((response) => {
-          let url = (response as { url: string }).url;
-          range && focusElementWithRange(this.richText.nativeElement, range);
-          range && this.insertImage(url, 500, 500);
-          range && this._contentChanged();
-          this.isUploading = false;
-
-        }, error => {
-          if (error) {
-            loadDataURI();
-          }
-        });
-
-      else
-        loadDataURI();
     }
   }
 
@@ -601,10 +647,15 @@ export class CdkRichTextEditorComponent implements OnInit {
   onPaste = (event: ClipboardEvent) => {
     const fileList = event.clipboardData?.files;
     if (fileList && fileList.length > 0) {
-
+      event.preventDefault();
+      event.stopPropagation();
       const pasteFile = (file: File | null) => {
         loadImage(file, (dataURI: string) => {
-          this.insertImage(dataURI.toString(), 500, 500);
+          const {id, elem} = this.insertImage(dataURI.toString(), 500, 500);
+          if (this.uploadImageRequest) {
+            this.isUploading = true;
+            this.uploadImageRequest.emit({file, elem});
+          }
           this._contentChanged();
         })
       }
@@ -670,111 +721,13 @@ export class CdkRichTextEditorComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    console.log('loading content');
-
     this.loadContent(this.content);
 
-    console.log('loading finished');
   }
-
-  isHashtagElement(element: Element, pattern: RegExp): boolean {
-
-    let textNodes: Text[] = [];
-    element.childNodes.forEach(child => {
-      if (child.nodeType == Node.TEXT_NODE) {
-        textNodes.push(child as Text);
-      }
-    });
-
-    let text = textNodes.map(textNode => textNode.textContent).join('');
-
-    if (text.match(pattern)) {
-      return true;
-    }
-    return false;
-  }
-
-
 
   loadContent = (content: string) => {
     this.richText.nativeElement.innerHTML = content;
-    this.suggestionList.forEach(suggestion => this.filterHashtags(suggestion));
-  }
-
-  filterHashtags = (suggestion: CdkSuggestionSetting) => {
-
-    const selection = window.getSelection();
-    if (selection == null) {
-      return;
-    }
-    let hashtag = suggestion.tag;
-
-    const nodes: Element[] = [];
-    const elements = this.richText.nativeElement.querySelectorAll('*'); // Select all elements
-
-    const pattern = new RegExp(`${hashtag}(.*?)${hashtag}`);
-
-    if (this.isHashtagElement(this.richText.nativeElement, pattern)) {
-      nodes.push(this.richText.nativeElement);
-
-    }
-    elements.forEach(element => {
-      if (this.isHashtagElement(element, pattern)) {
-        nodes.push(element);
-      }
-    });
-
-    for (let element of nodes) {
-      let textNodes = findTextNodes(element, hashtag);
-
-      for (let i = 0; i < textNodes.length; i += 2) {
-        const startNode = textNodes[i].text;
-        const startIndex = textNodes[i].index + hashtag.length;
-        const endNode = textNodes[i + 1].text;
-        const endIndex = textNodes[i + 1].index;
-
-        const range = document.createRange();
-        // range.selectNodeContents(element);
-        range.setStart(startNode, startIndex);
-        range.setEnd(endNode, endIndex);
-
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        let value = selection.toString();
-
-        const documentFragment = document.createElement('span');
-        documentFragment.setAttribute('hashtag_component', '' + suggestion.tag);
-        documentFragment.setAttribute('contenteditable', 'false');
-
-        const realHashtag = document.createElement('span');
-
-        const hiddenHashtag = document.createElement('span');
-        hiddenHashtag.style.display = "none";
-        hiddenHashtag.setAttribute('hashtag_code', suggestion.tag);
-        hiddenHashtag.innerHTML = `${suggestion.tag}${value}${suggestion.tag}`;
-        const viewRef: EmbeddedViewRef<Node> = suggestion.selectionTemplate.createEmbeddedView({ value: JSON.parse(value) });
-        this.richTextContainer.insert(viewRef);
-
-        for (let node of viewRef.rootNodes) {
-          realHashtag.appendChild(node);
-        }
-
-        documentFragment.appendChild(realHashtag);
-        documentFragment.appendChild(hiddenHashtag);
-
-        range.extractContents();
-        range.insertNode(documentFragment);
-        textNodes = findTextNodes(element, hashtag);
-      }
-
-      textNodes.forEach(item => item.text.textContent && (item.text.textContent = item.text.textContent?.replaceAll(hashtag, '')));
-    }
-    selection.removeAllRanges();
-  }
-
-  getAllHashtags() {
-
+    makeLiveHashtags(this.richText.nativeElement, HASHTAG, this.hashtagTemplate, this.richTextContainer)
   }
 
   constructor(
@@ -784,7 +737,43 @@ export class CdkRichTextEditorComponent implements OnInit {
     this.toolbarItems = TOOLBAR_ITEMS.map(item => ({ action: item.action, icon: item.icon, active: false })).filter(item => item.action !== 'component');
   }
 
-  ngOnInit(): void {
+  writeValue(value: string): void {
+    setTimeout(()=>this.loadContent(value), 10)
+    this.content = value;
+  }
 
+  registerOnChange(onChange: any): void {
+    this.onChange = onChange;
+  }
+
+  registerOnTouched(onTouched: any): void {
+    this.onTouched = onTouched;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
+  markAsTouched() {
+    if (!this.touched) {
+      this.onTouched();
+      this.touched = true;
+    }
+  }
+
+  ngOnInit(): void {
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['hashtagResults']) {
+      this.suggestionList$.next(changes['hashtagResults'].currentValue);
+    }
+
+    if (changes['uploadImageResult']) {
+      let {url, elem} = changes['uploadImageResult'].currentValue;
+      elem.src = url;
+      this.isUploading = false;
+      this._contentChanged();
+    }
   }
 }

@@ -6,7 +6,8 @@ enum MarkTypes {
   code = 'code-line'
 }
 
-
+export const HASHTAG = '--##--';
+export const HASHTAG_TRIGGER = '#';
 export const TOOLBAR_ITEMS = [
   {
     action: 'bold',
