@@ -26,7 +26,7 @@ export interface CdkSuggestionSelect {
 
 export class CdkSuggestionComponent {
 
-    @Input('getSuggestionList') getSuggestionList: (tag: string) => Promise<CdkSuggestionSetting>;
+    @Input('getSuggestionList') getSuggestionList?: (tag: string) => Promise<CdkSuggestionSetting>;
     @Output('cdkSuggestionSelected') select = new EventEmitter<CdkSuggestionSelect>();
 
     @ViewChild('container') container!: ElementRef<HTMLElement>;
@@ -245,7 +245,7 @@ export class CdkSuggestionComponent {
     onValueChange = (event: Event) => {
         let ev = event as InputEvent;
         if (ev.data && (this.isVisible === false || this.isVisible && this.filteredSuggestions.length == 0)) {
-            this.getSuggestionList(ev.data).then(suggestion => {
+            this.getSuggestionList && this.getSuggestionList(ev.data).then(suggestion => {
               this.show(false);
               this.setTrigger(suggestion);
               return this.show(true);

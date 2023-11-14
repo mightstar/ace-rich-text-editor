@@ -138,7 +138,7 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
       const endNode = textNodes[i + 1].text;
       const endIndex = textNodes[i + 1].index;
 
-      if (startNode !== endNode)
+      if (startNode !== endNode || !startNode.textContent)
         continue;
 
       let value = startNode.textContent.substring(startIndex, endIndex);

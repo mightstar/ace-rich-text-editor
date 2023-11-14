@@ -94,7 +94,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
   uploadImageRequest = new EventEmitter<{file: File, elem: any}>();
 
   @Input('uploadImageResult')
-  uploadImageResult: {url: string, elem: any} = undefined;
+  uploadImageResult: {url: string, elem: any} = {url:"", elem:null};
 
   @Output('hashtagRequest')
   hashtagRequest = new EventEmitter<string>();
@@ -108,13 +108,13 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
   @Output()
   blur = new EventEmitter();
 
-  @Input() placeholder: string;
+  @Input() placeholder: string = "";
 
   suggestionList$: BehaviorSubject<CdkSuggestionItem[]> = new BehaviorSubject<CdkSuggestionItem[]>([]);
 
   private _currentContent: string = '';
 
-  onChange = (value) => {};
+  onChange = (value: any) => {};
   onTouched = () => {};
   touched = false;
   disabled = false;
@@ -437,7 +437,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
     }
   }
 
-  insertImage(url: string, width: number, height: number): {id:string, elem: HTMLImageElement} {
+  insertImage(url: string, width: number, height: number): {id:string, elem?: HTMLImageElement} {
 
     let selection = window.getSelection();
     let id = "";
@@ -591,6 +591,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
           }
         }
       );
+      this.hashtagRequest.emit("");
     });
   }
 
@@ -603,8 +604,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
   }
 
   onDrop = (event: DragEvent) => {
-
-    let file = event.dataTransfer?.files[0];
+    if ( !event.dataTransfer?.files[0] ) {
+      return;
+    }
+    let file = event.dataTransfer.files[0];
     let x = event.clientX;
     let y = event.clientY;
     if (file && file.type.startsWith('image/')) {
@@ -619,7 +622,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
-            let elem: HTMLImageElement;
+            let elem: (HTMLImageElement|undefined);
             range && focusElementWithRange(this.richText.nativeElement, range);
             range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
             range && this._contentChanged();
@@ -630,7 +633,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
-            let elem: HTMLImageElement;
+            let elem: (HTMLImageElement|undefined);
             range && focusElementWithRange(this.richText.nativeElement, range);
             range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
             range && this._contentChanged();
@@ -645,11 +648,14 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
   }
 
   onPaste = (event: ClipboardEvent) => {
-    const fileList = event.clipboardData?.files;
+    if ( !event.clipboardData?.files ) {
+      return;
+    }
+    const fileList = event.clipboardData.files;
     if (fileList && fileList.length > 0) {
       event.preventDefault();
       event.stopPropagation();
-      const pasteFile = (file: File | null) => {
+      const pasteFile = (file: File) => {
         loadImage(file, (dataURI: string) => {
           const {id, elem} = this.insertImage(dataURI.toString(), 500, 500);
           if (this.uploadImageRequest) {
@@ -660,8 +666,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, OnInit 
         })
       }
 
-      for (let i = 0; i < fileList.length; i++)
-        pasteFile(fileList.item(i));
+      for (let i = 0; i < fileList.length; i++) {
+        let file = fileList.item(i);
+        file && pasteFile(file);
+      }
     }
   }
 

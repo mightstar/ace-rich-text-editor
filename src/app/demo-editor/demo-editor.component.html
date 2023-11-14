@@ -8,7 +8,7 @@
 
 <ng-template #suggestionSelectionTemplate let-value="value">
   <span contenteditable="false" class="demo-mention-view"
-    ><b>@{{ value }}</b>
+    ><b>{{ value }}</b>
   </span>
 </ng-template>
 
@@ -36,8 +36,6 @@
     [cdkSuggestionEnabled]="suggestionEnabled"
     [cdkSuggestions]="suggestions"
     [cdkDefaultToolbarItems]="toolbarItems"
-    (cdkContentChanged)="handleContent($event)"
-    [cdkContent]="content"
   >
     
   </recruitler-rte>
