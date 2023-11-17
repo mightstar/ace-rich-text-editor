@@ -33,12 +33,13 @@
 <div class="demo-editor">
   <recruitler-rte
     #editor
-    [cdkSuggestionEnabled]="suggestionEnabled"
-    [cdkSuggestions]="suggestions"
-    [cdkDefaultToolbarItems]="toolbarItems"
-  >
-    
-  </recruitler-rte>
+    [hashtagItemTemplate]="hashtagItemTemplate"
+    [hashtagTemplate]="hashtagSelectionTemplate"
+    [hashtagResults]="hashtagResults"
+    (hashtagRequest)="hashtagSearch($event)"
+    placeholder="What's your experience?"
+    style="width: 100%;"
+    [formControl]="content" />
   
   <hr/>
   
