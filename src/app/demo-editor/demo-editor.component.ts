@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { CdkEditAction, CdkRichTextEditorComponent, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
 import { CdkSuggestionItem } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/suggestion/suggestion.component';
 import { HashtagComponent } from './hashtag/hashtag.component';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
 import { CustomEmbedComponent } from './custom-embed.component';
-import { RichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor.component';
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -41,13 +40,15 @@ export class UnusualInlineComponent { }
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
-  imports: [ CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
+  imports: [ 
+    ReactiveFormsModule,
+    CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
   styleUrls: ['./demo-editor.component.scss'],
   standalone: true,
-  encapsulation: ViewEncapsulation.None
-
+  encapsulation: ViewEncapsulation.None,
+  
 })
-export class DemoEditorComponent {
+export class DemoEditorComponent{
   @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true })
   suggestionItemTemplate!: TemplateRef<any>;
 
@@ -63,6 +64,28 @@ export class DemoEditorComponent {
   @ViewChild('editor', {read: CdkRichTextEditorComponent, static: true})
   editor! : CdkRichTextEditorComponent;
 
+  hashtagResults: CdkSuggestionItem[] = [];
+
+  content = this.formBuilder.control({ value: "This is a test", disabled: false }, [Validators.required]);
+
+  constructor(private formBuilder: FormBuilder) {
+    
+  }
+
+  hashtagSearch(term: string): void {
+    this.hashtagResults = [{
+      key: "Red", value: "Red"
+    },
+    {
+      key: "Green", value: "Green"
+
+    },
+    {
+      key: "Blue", value: "Blue"
+
+    },];
+  }
+
   onBtnClick = (action: CdkEditAction) => {
 
     this.editor.triggerToolbarAction({action: action});
@@ -74,7 +97,7 @@ export class DemoEditorComponent {
   }
 
   preloadContent = () => {
-    this.content = this.embedContent;
+    
   }
 
   filter = (query: string, key: string) => {
@@ -152,5 +175,4 @@ export class DemoEditorComponent {
 
   embedContent = "";
 
-  content = '';
 }
