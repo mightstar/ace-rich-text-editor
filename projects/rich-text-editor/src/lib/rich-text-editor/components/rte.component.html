@@ -3,10 +3,10 @@
 <ng-template #defaultToolbar>
   <div class="rte-toolbar-btn-group rte-popup">
     @for (item of toolbarItems; track item.id) {
-    <button
+      <button
+        class="rte-toolbar-btn rte-active"
         [ngClass]="{ 'rte-active': item.active }"
-        (click)="clickToolbarItem(item)"
-        class="rte-toolbar-btn rte-active">
+        (click)="clickToolbarItem(item)">
         <span [innerHTML]="item.icon"></span>
       </button>
     }
