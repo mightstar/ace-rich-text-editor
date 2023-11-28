@@ -30,7 +30,7 @@ export interface CdkSuggestionSetting {
   tag: string,
   itemTemplate: TemplateRef<any>,
   selectionTemplate: TemplateRef<any>,
-  queryFilter?: (query: string, key: string) => boolean,
+  queryFilter?: (query: string, item: CdkSuggestionItem) => boolean,
   data: CdkSuggestionItem[]
 }
 @Injectable()

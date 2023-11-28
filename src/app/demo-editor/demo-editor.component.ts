@@ -121,7 +121,7 @@ export class DemoEditorComponent{
         {
           key: "John Smith", value: "John Smith"
         },],
-        queryFilter: this.filter
+        
       },
       {
         trigger: "#",
@@ -139,7 +139,6 @@ export class DemoEditorComponent{
           key: "Blue", value: "Blue"
 
         },],
-        queryFilter: this.filter
       }
     ];
   }

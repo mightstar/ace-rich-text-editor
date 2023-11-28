@@ -7,7 +7,8 @@ import { CdkSuggestionSetting } from '../rte.component';
 
 export interface CdkSuggestionItem {
     key: string,
-    value: any
+    value: any,
+    search?: string
 }
 
 export interface CdkSuggestionSelect {
@@ -51,10 +52,11 @@ export class CdkSuggestionComponent {
 
     query = "";
 
-    filter! : (query: string, key: string) => boolean;
+    filter! : (query: string, item:CdkSuggestionItem) => boolean;
 
-    defaultFilter = (query: string, key: string) => {
-        return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
+    defaultFilter = (query: string, item:CdkSuggestionItem) => {
+        const search = item.search || item.key
+        return search.toLowerCase().indexOf(query.toLowerCase()) != -1;
     }
 
 
@@ -132,7 +134,7 @@ export class CdkSuggestionComponent {
     }
 
     filterItems = (query: string) => {
-        this.filteredSuggestions = this.suggestions.filter((item) => this.filter(query, item.key));
+        this.filteredSuggestions = this.suggestions.filter((item) => this.filter(query, item));
     }
 
     show = (visible: boolean) => {
