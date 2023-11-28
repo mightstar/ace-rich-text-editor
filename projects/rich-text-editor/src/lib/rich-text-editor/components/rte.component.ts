@@ -11,8 +11,6 @@ import { CdkSuggestionComponent } from './suggestion/suggestion.component';
 import { SafeDOMPipe } from '../pipes/safe-dom.pipe';
 import {  CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolbarItemSetting, IIMageRes, IUploadReq, ToolbarItem } from '../interfaces';
 
-export type CdkEditAction = "heading1" | "heading2" | "heading3" | "heading4" | "heading5" | "quote" | "component" | "image" | "bold" | "italic" | "underline" | "code" | "ordered-list" | "numbered-list";
-
 @Component({
   selector: 'recruitler-rte',
   templateUrl: './rte.component.html',

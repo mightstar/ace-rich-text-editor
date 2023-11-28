@@ -1,7 +1,7 @@
 import { Component, ViewChild, ViewEncapsulation, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkEditAction, CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
-import { CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
+import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
+import { CdkEditAction, CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
 import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
