@@ -6,6 +6,8 @@
 //  * found in the LICENSE file at https://angular.io/license
 //  */
 
+export * from './interfaces/';
+export * from './pipes';
 export * from './components/rte.component';
 export * from './components/rte.service';
 export * from './components/suggestion/suggestion.component';
