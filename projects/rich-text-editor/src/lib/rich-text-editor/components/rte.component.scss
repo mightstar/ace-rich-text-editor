@@ -58,9 +58,8 @@
   }
 
   div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
-    display: block ;
+    display: block;
   }
-
 }
 
 .rte-wrapper {
@@ -128,12 +127,12 @@ div.rte-text-editor:focus {
   text-transform: none;
   width: 34px;
   cursor: pointer;
-}
-.rte-toolbar-btn.rte-active {
-  background-color: #c8cbcf;
-}
-.rte-toolbar-btn:hover {
-  background-color: #c8cbcf;
+  &.rte-active {
+    background-color: #c8cbcf;
+  }
+  &:hover {
+    background-color: #c8cbcf;
+  }
 }
 
 .rte-quick-toolbar {
@@ -145,35 +144,16 @@ div.rte-text-editor:focus {
   transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s opacity;
 }
 
-.rte-quick-toolbar.rte-show {
+.rte-show {
   opacity: 0.8;
   z-index: 99999;
-}
-
-.rte-quick-toolbar.rte-show:hover {
-  opacity: 1;
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .rte-toolbar-btn-group {
   display: flex;
-}
-
-.rte-popup {
-  border-color: #aaa transparent transparent transparent;
-}
-
-.rte-popup::after,
-.rte-popup::before {
-  left: 50%;
-  top: 100%;
-
-  border-style: solid;
-  content: "";
-  display: block;
-  height: 0;
-  opacity: 1;
-  position: absolute;
-  width: 0;
 }
 
 .rte-popup {
@@ -182,18 +162,29 @@ div.rte-text-editor:focus {
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   min-width: 0;
-  overflow: hidden;
-}
-
-.rte-popup::before {
+  overflow: hidden;  
   border-color: #aaa transparent transparent transparent;
-  border-width: 9px;
-  margin-left: -9px;
-}
-
-.rte-popup::after {
-  border-color: white transparent transparent transparent;
-  border-width: 8px;
-  margin-left: -8px;
-  margin-top: -1px;
+  &::after,
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 0;
+    height: 0;
+    opacity: 1;
+    border-style: solid;
+  }
+  &::before {
+    border-color: #aaa transparent transparent transparent;
+    border-width: 9px;
+    margin-left: -9px;
+  }
+  &::after {
+    border-color: white transparent transparent transparent;
+    border-width: 8px;
+    margin-left: -8px;
+    margin-top: -1px;
+  }
 }
