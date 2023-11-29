@@ -1,7 +1,7 @@
 import { Component, ViewChild, ViewEncapsulation, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
-import { CdkEditAction, CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
+import { CdkEditAction, CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting, IUploadReq } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
 import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Pipe, PipeTransform } from '@angular/core';
@@ -9,6 +9,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
 import { CustomEmbedComponent } from './custom-embed.component';
+
+import { uploadFile } from '@uploadcare/upload-client'
+
 export enum MarkTypes {
   bold = 'bold',
   italic = 'italic',
@@ -69,6 +72,18 @@ export class DemoEditorComponent{
   content = this.formBuilder.control({ value: "This is a test", disabled: false }, [Validators.required]);
 
   constructor(private formBuilder: FormBuilder) {
+    
+  }
+
+  uploadImageRequest($uploadReq: IUploadReq): void {
+    uploadFile($uploadReq.file, {
+      publicKey: '54008102efbf320823b0',
+      store: 'auto',
+    }).then(result=>{
+      console.log(result);
+    }).catch(error=>{
+
+    });
     
   }
 
