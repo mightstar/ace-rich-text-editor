@@ -395,7 +395,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       file && formData.append('photo', file, file.name);
 
       if (this.uploadImageRequest) {
-        this.isUploading = true;
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
@@ -435,7 +434,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         loadImage(file, (dataURI: string) => {
           const {id, elem} = this.insertImage(dataURI.toString(), 500, 500);
           if (this.uploadImageRequest) {
-            this.isUploading = true;
             this.uploadImageRequest.emit({file, elem});
           }
           this._contentChanged();

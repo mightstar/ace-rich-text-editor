@@ -37,6 +37,7 @@
     [hashtagTemplate]="hashtagSelectionTemplate"
     [hashtagResults]="hashtagResults"
     (hashtagRequest)="hashtagSearch($event)"
+    (uploadImageRequest)="uploadImageRequest($event)"
     placeholder="What's your experience?"
     style="width: 100%;"
     [formControl]="content" />
