@@ -395,6 +395,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       file && formData.append('photo', file, file.name);
 
       if (this.uploadImageRequest) {
+        
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
@@ -648,6 +649,9 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   private _contentChanged = () => {
+    if ( !this.richText?.nativeElement ) {
+      return;
+    }
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
