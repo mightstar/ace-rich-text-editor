@@ -80,7 +80,6 @@ export class DemoEditorComponent{
       publicKey: '54008102efbf320823b0',
       store: 'auto',
     }).then(result=>{
-      // console.log(result);
       if (result?.cdnUrl && result?.name) {
         $uploadReq.elem.src = result.cdnUrl + result.name;
       }

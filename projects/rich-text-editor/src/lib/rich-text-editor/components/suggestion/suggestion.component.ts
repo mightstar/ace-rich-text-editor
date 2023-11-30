@@ -228,7 +228,6 @@ export class CdkSuggestionComponent {
     this.itemTemplate = suggestion.itemTemplate;
     this.filter = suggestion.queryFilter ?? this.defaultFilter;
 
-    // console.log("this.filter :>> ", this.filter);
     this.suggestions = suggestion.data;
     this.filterItems("");
     this.selectedIndex = 0;

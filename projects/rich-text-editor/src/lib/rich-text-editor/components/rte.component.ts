@@ -655,7 +655,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
-      console.log('hashtag :>> ', hashtag);
       if (hashtag.children.length == 2) {
         const textNode = document.createTextNode(hashtag.children[1].innerHTML);
         hashtag.replaceWith(textNode);
