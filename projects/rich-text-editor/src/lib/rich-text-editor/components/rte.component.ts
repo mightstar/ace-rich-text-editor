@@ -678,6 +678,15 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   private _contentChanged = () => {
+    if (!this.richText?.nativeElement) {
+      return;
+    }
+
+    const codeTags = this.richText.nativeElement.querySelectorAll('code');
+    codeTags.forEach(codeTag=> {
+        codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+    })
+
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
