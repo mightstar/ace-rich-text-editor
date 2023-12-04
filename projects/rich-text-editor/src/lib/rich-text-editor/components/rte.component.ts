@@ -461,7 +461,8 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         loadImage(file, (dataURI: string) => {
           const { id, elem } = this.insertImage(dataURI.toString(), 500, 500);
           if (this.uploadImageRequest) {
-            this.uploadImageRequest.emit({ file, elem });
+            this.isUploading = true;
+            this.uploadImageRequest.emit({file, elem});
           }
           this._contentChanged();
         })
@@ -677,15 +678,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   private _contentChanged = () => {
-    if (!this.richText?.nativeElement) {
-      return;
-    }
-
-    // const codeTags = this.richText.nativeElement.querySelectorAll('code');
-    // codeTags.forEach(codeTag=> {
-    //     codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
-    // })
-
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
