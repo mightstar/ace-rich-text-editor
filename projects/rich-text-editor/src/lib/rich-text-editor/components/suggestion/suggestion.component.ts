@@ -168,34 +168,37 @@ export class CdkSuggestionComponent {
     }
   };
 
-  onKeyDown = (event: KeyboardEvent) => {
-    if (event.key == "Escape") return this.show(false);
+  onKeyDown = (event: KeyboardEvent):boolean => {
+    if (event.key == "Escape") {
+      this.show(false);
+      return true;
+    }
 
     if (event.key == "ArrowDown") {
       if (this.isVisible) {
         if (this._moveSelected(1)) event.preventDefault();
-        return;
+        return true;
       }
     }
 
     if (event.key == "ArrowUp") {
       if (this.isVisible) {
         if (this._moveSelected(-1)) event.preventDefault();
-        return;
+        return true;
       }
     }
 
     if (event.key == "Enter") {
       if (this.isVisible) {
         this._enterSuggestion(event);
-
-        return;
+        return true;
       }
     }
 
     if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
       if (this.isVisible) setTimeout(() => this._updateQuery(), 0);
     }
+    return false;
   };
 
   onClick(event: MouseEvent, clickedItem: CdkSuggestionItem): void {
@@ -228,7 +231,6 @@ export class CdkSuggestionComponent {
     this.itemTemplate = suggestion.itemTemplate;
     this.filter = suggestion.queryFilter ?? this.defaultFilter;
 
-    // console.log("this.filter :>> ", this.filter);
     this.suggestions = suggestion.data;
     this.filterItems("");
     this.selectedIndex = 0;
@@ -248,7 +250,9 @@ export class CdkSuggestionComponent {
             return this.show(true);
           })
           .catch((reason) => {
-            console.log(reason);
+            if ( reason ) {
+              console.log(reason);
+            }
           });
     }
     if (this.isVisible) {

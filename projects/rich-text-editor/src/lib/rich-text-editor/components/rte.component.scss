@@ -1,3 +1,6 @@
+// @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css");
+@import "highlight.js/scss/default.scss";
+
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -37,7 +40,7 @@
   code {
     font-family: monospace;
     background-color: #aaa;
-
+    display: block;
     padding: 3px;
   }
 
@@ -53,7 +56,7 @@
   img {
   }
 
-  a, abbr, b, button, br, button, cite, code, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
+  a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
     display: inline ;
   }
 

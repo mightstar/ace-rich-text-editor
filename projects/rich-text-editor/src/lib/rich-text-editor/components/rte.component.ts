@@ -3,13 +3,15 @@ import { AfterContentChecked, AfterViewInit, Component, ElementRef, EmbeddedView
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, take } from 'rxjs';
 
-import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
+import { convertHTML2Hightlighted, focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
 import { HASHTAG, HASHTAG_TRIGGER, TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
 import { CircularProgressComponent } from './circular-progressive/circular-progressive.component';
 import { CdkSuggestionComponent } from './suggestion/suggestion.component';
 import { SafeDOMPipe } from '../pipes/safe-dom.pipe';
-import {  CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolbarItemSetting, IIMageRes, IUploadReq, ToolbarItem } from '../interfaces';
+import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolbarItemSetting, IIMageRes, IUploadReq, ToolbarItem } from '../interfaces';
+
+import  hljs from 'highlight.js';
 
 @Component({
   selector: 'recruitler-rte',
@@ -17,7 +19,7 @@ import {  CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolb
   styleUrls: ['./rte.component.scss'],
   providers: [SafeDOMPipe, {
     provide: NG_VALUE_ACCESSOR,
-    multi:true,
+    multi: true,
     useExisting: CdkRichTextEditorComponent
   }],
   standalone: true,
@@ -71,7 +73,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   ngAfterViewInit() {
     this.loadContent(this.content);
   }
-  
+
   ngAfterContentChecked() {
     if (!this.toolbarTemplate) {
       this.toolbarTemplate = this.defaultToolbar;
@@ -330,8 +332,32 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     }
 
     if (this.suggestionEnabled) {
-      this.suggestion.onKeyDown(event);
+      if (this.suggestion.onKeyDown(event)) {
+        return;
+      }
     }
+
+    var selection = document.getSelection();
+    if (event.key == "Enter" && selection) {
+      var range = selection.getRangeAt(0),
+        br = document.createElement("br");
+
+      range.deleteContents();
+
+      range.insertNode(br);
+      var newLine = document.createTextNode('\n');
+
+      range.setStartAfter(br);
+      range.setEndAfter(br);
+
+      range.insertNode(newLine);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+      event.preventDefault();
+    }
+
+
   }
 
   onFocusIn = () => {
@@ -350,13 +376,13 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   getSuggestionList = (tag: string) => {
     return new Promise<CdkSuggestionSetting>((resolve, reject) => {
-      if ( tag != HASHTAG_TRIGGER ) {
-        reject("Unknown tag: " + tag);
+      if (tag != HASHTAG_TRIGGER) {
+        reject("");
         return;
       }
       this.suggestionList$.pipe(take(1)).subscribe(
         (hashtagList) => {
-          if ( hashtagList ) {
+          if (hashtagList) {
             resolve({
               data: hashtagList,
               tag: HASHTAG,
@@ -395,24 +421,24 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       file && formData.append('photo', file, file.name);
 
       if (this.uploadImageRequest) {
-        this.isUploading = true;
+
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
-            let elem: (HTMLImageElement|undefined);
+            let elem: (HTMLImageElement | undefined);
             range && focusElementWithRange(this.richText.nativeElement, range);
-            range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
+            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
             range && this._contentChanged();
-            this.uploadImageRequest.emit({file, elem});
+            this.uploadImageRequest.emit({ file, elem });
           }, 10);
         });
       } else {
         file && loadImage(file, (dataURI: string) => {
           setTimeout(() => {
             let id: string;
-            let elem: (HTMLImageElement|undefined);
+            let elem: (HTMLImageElement | undefined);
             range && focusElementWithRange(this.richText.nativeElement, range);
-            range && ({id, elem} = this.insertImage(dataURI.toString(), 500, 500));
+            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
             range && this._contentChanged();
           }, 10);
         });
@@ -424,7 +450,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   onPaste = (event: ClipboardEvent) => {
-    if ( !event.clipboardData?.files ) {
+    if (!event.clipboardData?.files) {
       return;
     }
     const fileList = event.clipboardData.files;
@@ -433,10 +459,9 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       event.stopPropagation();
       const pasteFile = (file: File) => {
         loadImage(file, (dataURI: string) => {
-          const {id, elem} = this.insertImage(dataURI.toString(), 500, 500);
+          const { id, elem } = this.insertImage(dataURI.toString(), 500, 500);
           if (this.uploadImageRequest) {
-            this.isUploading = true;
-            this.uploadImageRequest.emit({file, elem});
+            this.uploadImageRequest.emit({ file, elem });
           }
           this._contentChanged();
         })
@@ -506,13 +531,15 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
       // const tagTemplate = this.templates.nativeElement.querySelector(tag);
       const tagTemplate = document.createElement('code');
-
+      const content = range.extractContents();
       classLists.forEach(item => tagTemplate?.classList.add(item));
 
       if (tagTemplate) {
-        const element = tagTemplate.cloneNode(true);
-        element.appendChild(range.extractContents());
-        range.insertNode(element);
+        tagTemplate.appendChild(content);
+        let textContent = tagTemplate.innerHTML;
+        console.log("textContent = ", textContent);
+        tagTemplate.innerHTML = convertHTML2Hightlighted(textContent);
+        range.insertNode(tagTemplate);
       }
     }
   }
@@ -650,15 +677,22 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   private _contentChanged = () => {
+    if (!this.richText?.nativeElement) {
+      return;
+    }
+
+    // const codeTags = this.richText.nativeElement.querySelectorAll('code');
+    // codeTags.forEach(codeTag=> {
+    //     codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+    // })
+
     const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
-      console.log('hashtag :>> ', hashtag);
       if (hashtag.children.length == 2) {
         const textNode = document.createTextNode(hashtag.children[1].innerHTML);
         hashtag.replaceWith(textNode);
       }
-
     });
 
     const html = this.domSantanizer.transform(clonedTextNode.innerHTML).toString();
@@ -671,7 +705,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     }
 
     clonedTextNode.remove();
-  }  
+  }
 
   // CONTROL VALUE ACCESSOR METHODS
   writeValue(value: string): void {
@@ -679,9 +713,9 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this.content = value;
   }
 
-  onChange = (value: any) => {};
+  onChange = (value: any) => { };
 
-  onTouched = () => {};
+  onTouched = () => { };
 
   registerOnChange(onChange: any): void {
     this.onChange = onChange;
