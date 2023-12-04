@@ -32,8 +32,14 @@
     (cdkSuggestionSelected)="onSuggestionSelected($event)"/>
 
   <div
+    #richTextDisplay
+    class="rte-text-editor">
+    
+  </div>
+
+  <div
     #richText
-    class="rte-text-editor"
+    class="rte-text-editor-hidden"
     [contentEditable]="true"
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"
@@ -43,7 +49,8 @@
     (mouseup)="onMouseUp($event)"
     (input)="onValueChange($event)"
     (drop)="onDrop($event)"
-    (paste)="onPaste($event)">
+    (paste)="onPaste($event)"
+    (scroll)="updateVerticalScroll($event)">
     <ng-content></ng-content>
   </div>
 </div>

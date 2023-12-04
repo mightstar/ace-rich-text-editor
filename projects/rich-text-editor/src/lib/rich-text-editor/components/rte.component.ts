@@ -12,6 +12,12 @@ import { SafeDOMPipe } from '../pipes/safe-dom.pipe';
 import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolbarItemSetting, IIMageRes, IUploadReq, ToolbarItem } from '../interfaces';
 
 import  hljs from 'highlight.js';
+import * as rangy from 'rangy';
+import 'rangy/lib/rangy-selectionsaverestore';
+
+(() => {
+  window.rangy = rangy;
+})();
 
 @Component({
   selector: 'recruitler-rte',
@@ -29,6 +35,7 @@ import  hljs from 'highlight.js';
 export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterViewInit, AfterContentChecked {
   @ViewChild('templates') templates!: ElementRef<HTMLElement>;
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
+  @ViewChild('richTextDisplay') richTextDisplay! : ElementRef<HTMLElement>;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbarElement!: ElementRef<HTMLElement>;
   @ViewChild('suggestion') suggestion!: CdkSuggestionComponent;
@@ -71,6 +78,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   ngAfterViewInit() {
+    this.richText.nativeElement.spellcheck = false;
     this.loadContent(this.content);
   }
 
@@ -355,6 +363,8 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       selection.removeAllRanges();
       selection.addRange(range);
       event.preventDefault();
+
+      this._contentChanged();
     }
 
 
@@ -472,7 +482,17 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         let file = fileList.item(i);
         file && pasteFile(file);
       }
+      return;
     }
+    const text = event.clipboardData.getData("text")
+    document.execCommand('insertText', false, text)
+    event.preventDefault();
+    event.stopPropagation();
+
+  }
+
+  updateVerticalScroll(event: any): void {
+    this.richTextDisplay.nativeElement.scrollTop = event.target.scrollTop;
   }
 
   clickToolbarItem(item: ToolbarItem): void {
@@ -512,6 +532,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   loadContent = (content: string) => {
     this.richText.nativeElement.innerHTML = content;
     makeLiveHashtags(this.richText.nativeElement, HASHTAG, this.hashtagTemplate, this.richTextContainer)
+    this._contentChanged();
   }
 
   private _setHashtagResults(items: CdkSuggestionItem[]): void {
@@ -537,9 +558,12 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
       if (tagTemplate) {
         tagTemplate.appendChild(content);
-        let textContent = tagTemplate.innerHTML;
-        console.log("textContent = ", textContent);
-        tagTemplate.innerHTML = convertHTML2Hightlighted(textContent);
+        // let textContent = tagTemplate.innerHTML;
+        // console.log("textContent = ", textContent);
+
+        // // tagTemplate.innerHTML = textContent;
+        // // tagTemplate.innerHTML = convertHTML2Hightlighted(textContent);
+        // hljs.highlightElement(tagTemplate);
         range.insertNode(tagTemplate);
       }
     }
@@ -682,12 +706,15 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       return;
     }
 
-    const codeTags = this.richText.nativeElement.querySelectorAll('code');
+    let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
+    const codeTags = clonedTextNode.querySelectorAll('code');
     codeTags.forEach(codeTag=> {
         codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
     })
+    this.richTextDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML;
+    clonedTextNode.remove();
 
-    const clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
+    clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
     hashtags.forEach(hashtag => {
       if (hashtag.children.length == 2) {

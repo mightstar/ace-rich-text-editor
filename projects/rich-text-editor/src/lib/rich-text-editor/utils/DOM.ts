@@ -1,5 +1,6 @@
 import { EmbeddedViewRef, TemplateRef, ViewContainerRef } from "@angular/core";
 import  hljs from 'highlight.js';
+import { convert } from 'html-to-text'; 
 
 export function isRectEmpty(rect: DOMRect) {
   return rect.x == 0 && rect.y == 0 && rect.right == 0 && rect.bottom == 0;
@@ -165,14 +166,17 @@ export function convertHTML2Hightlighted(htmlContent: string): string {
   let textContent = htmlContent;
   console.log("textContent = ", textContent);
   if (textContent) {
-    textContent = textContent.replaceAll('\n', '');
-    textContent = textContent.replaceAll('&nbsp;', ' ');
-    textContent = textContent.replaceAll('&nbsp', ' ');
-    textContent = textContent.replaceAll('</div>', '\n');
-    textContent = textContent.replaceAll('</p>', '\n');
-    textContent = textContent.replaceAll('<br/>', '\n');
-    textContent = textContent.replaceAll('<br>', '\n');
-    textContent = textContent.replace( /(<([^>]+)>)/ig, '');
+    // textContent = textContent.replaceAll('\n', '');
+    // textContent = textContent.replaceAll('&nbsp;', ' ');
+    // textContent = textContent.replaceAll('&nbsp', ' ');
+    // textContent = textContent.replaceAll('</div>', '\n');
+    // textContent = textContent.replaceAll('</p>', '\n');
+    // textContent = textContent.replaceAll('<br/>', '\n');
+    // textContent = textContent.replaceAll('<br>', '\n');
+    // textContent = textContent.replace( /(<([^>]+)>)/ig, '');
+    textContent = textContent.replaceAll('<div><br></div>', '<div></div>');
+    textContent = textContent.replaceAll('<div><br/></div>', '<div></div>');
+    textContent = convert(textContent,{ wordwrap: false });
     const hresult = hljs.highlightAuto(textContent)
     return hresult.value.replaceAll('\n', '<br/>');
   } 
