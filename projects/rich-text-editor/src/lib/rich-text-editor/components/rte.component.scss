@@ -1,5 +1,11 @@
 // @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css");
 @import "highlight.js/scss/github.scss";
+
+rte-suggestion {
+  position: absolute;
+  display: inline-block;
+}
+
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -41,7 +47,19 @@
     background-color: #aaa;
     display: block;
     padding: 3px;
+    min-height: 1rem;
   }
+
+  .code-inline {
+    font-family: monospace;
+    background-color: #aaa;
+    display: inline;
+    padding: 3px;
+    color:#983432;
+    min-height: 1rem;
+    min-width: 1rem;
+  }
+  
 
   ol {
   }
@@ -74,6 +92,7 @@
   color:unset !important;
   z-index: 0 !important;
   overflow: auto;
+  display: inline-block;
 }
 
 .rte-wrapper {
@@ -120,6 +139,15 @@ div.rte-text-editor-hidden {
     font-family: monospace;
     display: block;
     padding: 3px;
+    min-height: 1rem;
+  }
+
+  .code-inline {
+    font-family: monospace;
+    display: inline;
+    padding: 3px;
+    min-height: 1rem;
+    min-width: 1rem;
   }
 
   a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
@@ -131,7 +159,7 @@ div.rte-text-editor-hidden {
   }
 
   position: relative;
-  display: block;
+  display: inline-block;
   width: calc(100% - 24px);
   height: calc(100% - 24px);
   padding: 12px;
@@ -141,6 +169,7 @@ div.rte-text-editor-hidden {
   z-index: 1;
   caret-color: black;
   overflow: auto;
+
 }
 
 div.rte-text-editor:focus {

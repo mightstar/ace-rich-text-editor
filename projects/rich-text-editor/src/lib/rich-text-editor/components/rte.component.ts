@@ -345,27 +345,27 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       }
     }
 
-    var selection = document.getSelection();
-    if (event.key == "Enter" && selection) {
-      var range = selection.getRangeAt(0),
-        br = document.createElement("br");
+    // var selection = document.getSelection();
+    // if (event.key == "Enter" && selection) {
+    //   var range = selection.getRangeAt(0),
+    //     br = document.createElement("br");
 
-      range.deleteContents();
+    //   range.deleteContents();
 
-      range.insertNode(br);
-      var newLine = document.createTextNode('\n');
+    //   range.insertNode(br);
+    //   var newLine = document.createTextNode('\n');
 
-      range.setStartAfter(br);
-      range.setEndAfter(br);
+    //   range.setStartAfter(br);
+    //   range.setEndAfter(br);
 
-      range.insertNode(newLine);
+    //   range.insertNode(newLine);
 
-      selection.removeAllRanges();
-      selection.addRange(range);
-      event.preventDefault();
+    //   selection.removeAllRanges();
+    //   selection.addRange(range);
+    //   event.preventDefault();
 
-      this._contentChanged();
-    }
+    //   this._contentChanged();
+    // }
 
 
   }
@@ -380,8 +380,57 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   onValueChange = (event: Event) => {
     event = event as KeyboardEvent;
-    if (this.suggestionEnabled) this.suggestion.onValueChange(event);
+    if (this.suggestionEnabled) {
+      this.suggestion.onValueChange(event);
+    }
+
+    this._handleCodeBlock(event as InputEvent);
+
     this._contentChanged();
+  }
+
+  _handleCodeBlock = (event: InputEvent):boolean => {
+    if ( event.data != '`' ) {
+      return false;
+    }
+    const selection = window.getSelection();
+    if ( !selection ) {
+      return false;
+    }
+    const endOffset = selection.getRangeAt(0).endOffset;
+    const focusNode = selection.focusNode;
+    if (focusNode && focusNode instanceof Text && focusNode.textContent) {
+      let text = focusNode.textContent;
+      let startIndex = 0;
+      if ( text.length > 2 && endOffset > 2 && text.substring(endOffset - 3, endOffset) == '```') {
+        const range = selection.getRangeAt(0);
+        range.setStart(focusNode, endOffset-3);
+        range.setEnd(focusNode, text.length);
+        const codeFragment = document.createElement('code');
+        const content = range.extractContents();
+        const contentElement = document.createTextNode(text.substring(endOffset));
+        codeFragment.appendChild(contentElement);
+        range.insertNode(codeFragment);
+        range.collapse();
+        return true;
+      }
+
+      const lastPos = text.lastIndexOf('`', endOffset - 2);
+      if ( text.length > 2 && lastPos > -1 && lastPos < endOffset - 2 ) {
+        const range = selection.getRangeAt(0);
+        range.setStart(focusNode, lastPos);
+        range.setEnd(focusNode, endOffset);
+        const codeFragment = document.createElement('span');
+        codeFragment.classList.add('code-inline');
+        const content = range.extractContents();
+        const contentElement = document.createTextNode(text.substring(lastPos + 1, endOffset -1));
+        codeFragment.appendChild(contentElement);
+        range.insertNode(codeFragment);
+        range.collapse();
+        return true;
+      }
+    }
+    return false;
   }
 
   getSuggestionList = (tag: string) => {

@@ -236,7 +236,7 @@ export class CdkSuggestionComponent {
     this.selectedIndex = 0;
   };
 
-  onValueChange = (event: Event) => {
+  onValueChange = (event: Event):boolean => {
     let ev = event as InputEvent;
     if (
       ev.data &&
@@ -254,9 +254,12 @@ export class CdkSuggestionComponent {
               console.log(reason);
             }
           });
+      return true;
     }
     if (this.isVisible) {
       this._updateQuery();
+      return true;
     }
+    return false;
   };
 }
