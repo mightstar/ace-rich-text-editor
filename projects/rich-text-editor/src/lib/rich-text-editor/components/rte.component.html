@@ -40,7 +40,7 @@
   <div
     #richText
     class="rte-text-editor-hidden"
-    [contentEditable]="true"
+    [contentEditable]="!disabled"
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"
     (focus)="onFocusIn()"

@@ -51,7 +51,7 @@ export class UnusualInlineComponent { }
   encapsulation: ViewEncapsulation.None,
   
 })
-export class DemoEditorComponent{
+export class DemoEditorComponent implements OnInit{
   @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true })
   suggestionItemTemplate!: TemplateRef<any>;
 
@@ -71,8 +71,11 @@ export class DemoEditorComponent{
 
   content = this.formBuilder.control({ value: "This is a test", disabled: false }, [Validators.required]);
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(private formBuilder: FormBuilder) { 
     
+  }
+  ngOnInit(): void {
+    this.content.disable();
   }
 
   uploadImageRequest($uploadReq: IUploadReq): void {

@@ -108,6 +108,17 @@ function isHashtagElement(element: Element, pattern: RegExp): boolean {
   return false;
 }
 
+export function refactorToDisplay(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
+  makeLiveHashtags(root, tag, template, viewContainer);
+  let clonedTextNode = root.cloneNode(true) as HTMLElement;
+  const codeTags = clonedTextNode.querySelectorAll('code');
+  codeTags.forEach(codeTag=> {
+      codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+  })
+  root.innerHTML = clonedTextNode.innerHTML;
+  clonedTextNode.remove();
+
+}
 
 export function makeLiveHashtags(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
   const selection = window.getSelection();
@@ -166,14 +177,6 @@ export function convertHTML2Hightlighted(htmlContent: string): string {
   let textContent = htmlContent;
   console.log("textContent = ", textContent);
   if (textContent) {
-    // textContent = textContent.replaceAll('\n', '');
-    // textContent = textContent.replaceAll('&nbsp;', ' ');
-    // textContent = textContent.replaceAll('&nbsp', ' ');
-    // textContent = textContent.replaceAll('</div>', '\n');
-    // textContent = textContent.replaceAll('</p>', '\n');
-    // textContent = textContent.replaceAll('<br/>', '\n');
-    // textContent = textContent.replaceAll('<br>', '\n');
-    // textContent = textContent.replace( /(<([^>]+)>)/ig, '');
     textContent = textContent.replaceAll('<div><br></div>', '<div></div>');
     textContent = textContent.replaceAll('<div><br/></div>', '<div></div>');
     textContent = convert(textContent,{ wordwrap: false });

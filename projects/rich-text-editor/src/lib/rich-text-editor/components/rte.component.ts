@@ -11,14 +11,6 @@ import { CdkSuggestionComponent } from './suggestion/suggestion.component';
 import { SafeDOMPipe } from '../pipes/safe-dom.pipe';
 import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolbarItemSetting, IIMageRes, IUploadReq, ToolbarItem } from '../interfaces';
 
-import  hljs from 'highlight.js';
-import * as rangy from 'rangy';
-import 'rangy/lib/rangy-selectionsaverestore';
-
-(() => {
-  window.rangy = rangy;
-})();
-
 @Component({
   selector: 'recruitler-rte',
   templateUrl: './rte.component.html',
@@ -291,10 +283,16 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   onMouseDown = (event: MouseEvent) => {
+    if ( this.disabled) {
+      return;
+    }
     if (this.suggestionEnabled) this.suggestion.onMouseDown(event);
   }
 
   onMouseUp = (event: MouseEvent) => {
+    if ( this.disabled) {
+      return;
+    }
     setTimeout(() => {
       const currentSelection = window.getSelection();
       currentSelection && this.selectionChanged.emit(currentSelection);
@@ -333,6 +331,9 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   onKeyDown = (event: KeyboardEvent) => {
+    if ( this.disabled) {
+      return;
+    }
     if (event.ctrlKey && event.key === 'z') {
       // empty?
     } else if (event.ctrlKey && event.key === 'y') {
@@ -509,10 +510,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   }
 
   onPaste = (event: ClipboardEvent) => {
-    if (!event.clipboardData?.files) {
+    if ( this.disabled) {
       return;
     }
-    const fileList = event.clipboardData.files;
+    const fileList = event.clipboardData?.files;
     if (fileList && fileList.length > 0) {
       event.preventDefault();
       event.stopPropagation();
@@ -533,7 +534,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       }
       return;
     }
-    const text = event.clipboardData.getData("text")
+    const text = event.clipboardData?.getData("text")
+    if ( !text ) {
+      return;
+    }
     document.execCommand('insertText', false, text)
     event.preventDefault();
     event.stopPropagation();
