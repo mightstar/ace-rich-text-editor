@@ -38,7 +38,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   @Input('cdkSuggestions') suggestions: CdkSuggestionSetting[] = [];
   @Input('cdkSuggestionEnabled') suggestionEnabled: boolean = true;
   @Input('cdkContent') content: string = "";
-  @Input() placeholder: string = "";
   @Input('hashtagItemTemplate') hashtagItemTemplate!: TemplateRef<any>;
   @Input('hashtagTemplate') hashtagTemplate!: TemplateRef<any>;
   @Input() set hashtagResults(val: CdkSuggestionItem[]) {
@@ -47,6 +46,14 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   @Input() set uploadImageResult(val: IIMageRes) {
     this._setImage(val);
   }
+  // USER INPUTS
+  // @Input() set disabled(val: boolean) {
+  //   this.setDisabledState(val);
+  // }
+  @Input() disabled = false;
+  // disabled = false;
+
+  @Input() placeholder: string = "";
   // OUTPUTS
   @Output('uploadImageRequest') uploadImageRequest = new EventEmitter<IUploadReq>();
   @Output('cdkEditorSelectionChanged') selectionChanged = new EventEmitter<Selection>();
@@ -58,7 +65,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   private _currentContent: string = '';
   // vars
   touched = false;
-  disabled = false;
   isSuggestionVisible: boolean = false;
   isUploading = false;
   toolbarItems: ToolbarItem[] = [];
@@ -806,6 +812,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this.onTouched = onTouched;
   }
 
+  // not using?
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
   }
