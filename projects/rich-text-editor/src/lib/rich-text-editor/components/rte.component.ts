@@ -3,7 +3,7 @@ import { AfterContentChecked, AfterViewInit, Component, ElementRef, EmbeddedView
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, take } from 'rxjs';
 
-import { convertHTML2Hightlighted, focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
+import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
 import { HASHTAG, HASHTAG_TRIGGER, TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
 import { CircularProgressComponent } from './circular-progressive/circular-progressive.component';
@@ -617,12 +617,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
       if (tagTemplate) {
         tagTemplate.appendChild(content);
-        // let textContent = tagTemplate.innerHTML;
-        // console.log("textContent = ", textContent);
-
-        // // tagTemplate.innerHTML = textContent;
-        // // tagTemplate.innerHTML = convertHTML2Hightlighted(textContent);
-        // hljs.highlightElement(tagTemplate);
         range.insertNode(tagTemplate);
       }
     }
@@ -766,10 +760,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     }
 
     let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
-    const codeTags = clonedTextNode.querySelectorAll('code');
-    codeTags.forEach(codeTag=> {
-        codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
-    })
+    // const codeTags = clonedTextNode.querySelectorAll('code');
+    // codeTags.forEach(codeTag => {
+    //   codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+    // })
     this.richTextDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML;
     clonedTextNode.remove();
 

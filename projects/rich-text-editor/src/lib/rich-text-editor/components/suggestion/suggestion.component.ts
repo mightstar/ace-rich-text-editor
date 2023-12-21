@@ -47,24 +47,17 @@ export class CdkSuggestionComponent {
     return search.toLowerCase().indexOf(query.toLowerCase()) != -1;
   }
 
-
-
   private _moveSelected = (step: number): boolean => {
-
     let currentIndex = this.selectedIndex;
-
     let newIndex = currentIndex == -1 ? 0 : currentIndex + step;
 
     if (this.filteredSuggestions.length == 0) {
-
       this.selectedIndex = -1;
-
       return false;
     }
+
     newIndex = (newIndex + this.filteredSuggestions.length) % this.filteredSuggestions.length;
-
     this.selectedIndex = newIndex;
-
     const selectedChild = this.container.nativeElement.childNodes[newIndex];
 
     if (selectedChild && selectedChild instanceof HTMLElement) {
@@ -75,10 +68,8 @@ export class CdkSuggestionComponent {
         this.container.nativeElement.scrollBy(0, itemRect.top - containerRect.top);
       } else if (itemRect.bottom > containerRect.bottom) {
         this.container.nativeElement.scrollBy(0, itemRect.bottom - containerRect.bottom);
-
       }
       return true;
-
     } else {
       return false;
     }
@@ -104,7 +95,6 @@ export class CdkSuggestionComponent {
         if (selection.focusOffset >= this.startedOffset) {
           const text = (selection.focusNode as Text).textContent;
           if (text) {
-
             this.query = text.slice(this.startedOffset, selection.focusOffset);
             this.filterItems(this.query);
 
@@ -150,25 +140,20 @@ export class CdkSuggestionComponent {
 
         let rect = selection.getRangeAt(0).getBoundingClientRect();
         if (isRectEmpty(rect)) {
-          rect = (
-            selection.getRangeAt(0).startContainer as Element
-          ).getBoundingClientRect();
+          rect = (selection.getRangeAt(0).startContainer as Element).getBoundingClientRect();
         }
 
-        const editorRect =
-          this.container.nativeElement.parentElement?.getBoundingClientRect();
+        const editorRect = this.container.nativeElement.parentElement?.getBoundingClientRect();
         if (editorRect) {
-          this.container.nativeElement.style.top =
-            "" + (rect.bottom - editorRect.top) + "px";
-          this.container.nativeElement.style.left =
-            "" + (rect.right - editorRect.x) + "px";
+          this.container.nativeElement.style.top = "" + (rect.bottom - editorRect.top) + "px";
+          this.container.nativeElement.style.left = "" + (rect.right - editorRect.x) + "px";
           this.container.nativeElement.classList.toggle("rte-show", true);
         }
       }
     }
   };
 
-  onKeyDown = (event: KeyboardEvent):boolean => {
+  onKeyDown = (event: KeyboardEvent): boolean => {
     if (event.key == "Escape") {
       this.show(false);
       return true;
@@ -230,7 +215,6 @@ export class CdkSuggestionComponent {
   setTrigger = (suggestion: CdkSuggestionSetting) => {
     this.itemTemplate = suggestion.itemTemplate;
     this.filter = suggestion.queryFilter ?? this.defaultFilter;
-
     this.suggestions = suggestion.data;
     this.filterItems("");
     this.selectedIndex = 0;
@@ -242,19 +226,14 @@ export class CdkSuggestionComponent {
       ev.data &&
       (this.isVisible === false || (this.isVisible && this.filteredSuggestions.length == 0))
     ) {
-      this.getSuggestionList &&
-        this.getSuggestionList(ev.data)
-          .then((suggestion) => {
-            this.show(false);
-            this.setTrigger(suggestion);
-            return this.show(true);
-          })
-          .catch((reason) => {
-            if ( reason ) {
-              console.log(reason);
-            }
-          });
-      return true;
+      this.getSuggestionList && this.getSuggestionList(ev.data).then((suggestion) => {
+        this.show(false);
+        this.setTrigger(suggestion);
+        return this.show(true);
+      })
+      .catch((reason) => {
+        console.log(reason);
+      });
     }
     if (this.isVisible) {
       this._updateQuery();

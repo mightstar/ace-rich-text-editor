@@ -1,5 +1,4 @@
 import { EmbeddedViewRef, TemplateRef, ViewContainerRef } from "@angular/core";
-import  hljs from 'highlight.js';
 import { convert } from 'html-to-text'; 
 
 export function isRectEmpty(rect: DOMRect) {
@@ -88,11 +87,9 @@ export function createLiveHashtag(tag: string, value: any, template: TemplateRef
   element.appendChild(hiddenHashtag);
 
   return element;
-
 }
 
 function isHashtagElement(element: Element, pattern: RegExp): boolean {
-
   let textNodes: Text[] = [];
   element.childNodes.forEach(child => {
     if (child.nodeType == Node.TEXT_NODE) {
@@ -111,13 +108,12 @@ function isHashtagElement(element: Element, pattern: RegExp): boolean {
 export function refactorToDisplay(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
   makeLiveHashtags(root, tag, template, viewContainer);
   let clonedTextNode = root.cloneNode(true) as HTMLElement;
-  const codeTags = clonedTextNode.querySelectorAll('code');
-  codeTags.forEach(codeTag=> {
-      codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
-  })
+  // const codeTags = clonedTextNode.querySelectorAll('code');
+  // codeTags.forEach(codeTag=> {
+  //     codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+  // })
   root.innerHTML = clonedTextNode.innerHTML;
   clonedTextNode.remove();
-
 }
 
 export function makeLiveHashtags(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
@@ -129,7 +125,6 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
 
   const nodes: Element[] = [];
   const elements = root.querySelectorAll('*'); // Select all elements
-
   const pattern = new RegExp(`${hashtag}(.*?)${hashtag}`);
 
   if (isHashtagElement(root, pattern)) {
@@ -173,15 +168,16 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
   selection.removeAllRanges();
 }
 
-export function convertHTML2Hightlighted(htmlContent: string): string {
-  let textContent = htmlContent;
-  console.log("textContent = ", textContent);
-  if (textContent) {
-    textContent = textContent.replaceAll('<div><br></div>', '<div></div>');
-    textContent = textContent.replaceAll('<div><br/></div>', '<div></div>');
-    textContent = convert(textContent,{ wordwrap: false });
-    const hresult = hljs.highlightAuto(textContent)
-    return hresult.value.replaceAll('\n', '<br/>');
-  } 
-  return "";
-}
+// Abandoned attempt to integrate highlight.js
+// export function convertHTML2Hightlighted(htmlContent: string): string {
+//   let textContent = htmlContent;
+//   console.log("textContent = ", textContent);
+//   if (textContent) {
+//     textContent = textContent.replaceAll('<div><br></div>', '<div></div>');
+//     textContent = textContent.replaceAll('<div><br/></div>', '<div></div>');
+//     textContent = convert(textContent,{ wordwrap: false });
+//     const hresult = hljs.highlightAuto(textContent)
+//     return hresult.value.replaceAll('\n', '<br/>');
+//   } 
+//   return "";
+// }
