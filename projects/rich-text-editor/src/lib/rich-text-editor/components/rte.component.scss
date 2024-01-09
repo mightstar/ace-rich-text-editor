@@ -11,7 +11,6 @@ rte-suggestion {
   }
 }
 
-
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -106,77 +105,6 @@ rte-suggestion {
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-div.rte-text-editor-hidden {
-  h1 {
-  }
-
-  h2 {
-  }
-
-  h3 {
-  }
-
-  h4 {
-  }
-
-  h5 {
-  }
-
-  b {
-  }
-
-  i {
-  }
-
-  u {
-  }
-
-  blockquote {
-    border-left: 2px solid transparent;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 10px;
-    font-style: italic;
-  }
-
-  code {
-    font-family: monospace;
-    display: block;
-    padding: 0px 0px 0px 44px;
-    font-size: 12px;
-    min-height: 1rem;
-  }
-
-  .code-inline {
-    font-family: monospace;
-    display: inline;
-    padding: 3px;
-    min-height: 1rem;
-    min-width: 1rem;
-  }
-
-  a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
-    display: inline ;
-  }
-
-  div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
-    display: block;
-  }
-
-  position: relative;
-  display: inline-block;
-  width: calc(100% - 24px);
-  height: calc(100% - 24px);
-  padding: 12px;
-  background-color: inherit;
-  border: none;
-  color:transparent;
-  z-index: 1;
-  caret-color: black;
-  overflow: auto;
-
 }
 
 div.rte-text-editor:focus {

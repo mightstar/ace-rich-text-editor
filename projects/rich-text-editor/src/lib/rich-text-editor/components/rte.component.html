@@ -1,12 +1,5 @@
 <!-- /Controls -->
 <!-- Rich text -->
-<!-- <dialog #codeDialog class="code-editor">
-  <div id='aceEditor' style="width:100%; height: 100%;"></div>
-  <div>
-    <button (click)="saveCode()">OK</button>
-  </div>
-</dialog> -->
-
 <ng-template #defaultToolbar>
   <div class="rte-toolbar-btn-group rte-popup">
     @for (item of toolbarItems; track item.action) {
@@ -43,18 +36,9 @@
     (cdkSuggestionSelected)="onSuggestionSelected($event)"/>
 
   <div
-    #richTextDisplay
-    class="rte-text-editor">
-  </div>
-
-  <div class="ready-display" style="position: fixed; z-index: -100;" #readyDisplay>
-
-  </div>
-
-  <div
     #richText
-    class="rte-text-editor-hidden"
-    [contentEditable]="disabled"
+    class="rte-text-editor"
+    [contentEditable]="!disabled"
     (cdkSuggestionSelected)="onSuggestionSelected($event)"
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"

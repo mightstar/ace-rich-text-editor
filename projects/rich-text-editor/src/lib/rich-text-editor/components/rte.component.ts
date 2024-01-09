@@ -30,8 +30,6 @@ import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolba
 })
 export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterViewInit, AfterContentChecked {
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
-  @ViewChild('richTextDisplay') richTextDisplay! : ElementRef<HTMLElement>;
-  @ViewChild('readyDisplay') readyDisplay! : ElementRef<HTMLElement>;
   // @ViewChild('codeDialog') codeDialog! : any;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbarElement!: ElementRef<HTMLElement>;
@@ -309,12 +307,14 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         range.setStart(focusNode, endOffset-3);
         range.setEnd(focusNode, text.length);
         const codeFragment = document.createElement('code');
-        // codeFragment.id = "targetEditor";
+        const brFragment = document.createElement('br');
         const content = range.extractContents();
         const contentElement = document.createTextNode(text.substring(endOffset));
-        if(contentElement.data !== '\n')codeFragment.appendChild(contentElement);
+        codeFragment.appendChild(contentElement);
+        range.insertNode(brFragment);
         range.insertNode(codeFragment);
         range.collapse();
+        this.formatCodeEditor();
         return true;
       }
 
@@ -334,6 +334,24 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       }
     }
     return false;
+  }
+
+  formatCodeEditor = () => {
+    const codeTags = this.richText.nativeElement.querySelectorAll('code');
+    codeTags.forEach(codeTag => {
+      codeTag.setAttribute('contenteditable', 'false');
+      const handler = ace.edit(codeTag);
+      handler.setOptions({
+        maxLines: Infinity,
+        theme: 'theme-monokai'
+      });
+      handler.session.setMode("ace/mode/javascript");
+      handler.session.on('change', () => {
+        codeTag.getElementsByTagName('input')[0].value = handler.getValue();
+      });
+      const codeFragment = document.createElement('input');
+      codeTag.appendChild(codeFragment);
+    })
   }
 
   getSuggestionList = (tag: string) => {
@@ -403,20 +421,18 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this.updateToolbar();
   }
 
-  // showCodeEditor(value: string, type: string = "javascript") {
-  //   this.handlerEditor.setValue(value);
-  //   this.codeDialog.nativeElement.showModal();
-  // }
-
-  // saveCode() {
-  //   const code: string = this.handlerEditor.getValue();
-  //   this.richText.nativeElement.querySelectorAll('#targetEditor')[0].innerHTML = code.replace(/\n/g, '<br/>');
-  //   this._contentChanged();
-  //   this.codeDialog.nativeElement.close();
-  // }
-
   getEditorCode = () => {
-    const editorCode = this.richText.nativeElement.innerHTML;
+    let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
+    const codeTags = clonedTextNode.querySelectorAll('code');
+    codeTags.forEach(codeTag => {
+      codeTag.attributes.removeNamedItem('contenteditable');
+      codeTag.attributes.removeNamedItem('class');
+      codeTag.attributes.removeNamedItem('style');
+      codeTag.innerHTML = codeTag.getElementsByTagName('input')[0].value;
+    })
+    clonedTextNode.remove();
+
+    const editorCode = clonedTextNode.innerHTML;
     console.log("Editor Code: ", editorCode);
     alert(editorCode);
   }
@@ -573,21 +589,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     if (!this.richText?.nativeElement) return;
 
     let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
-    this.readyDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML.replace(/\n/g, '<br/>');
-
-    const codeTags = this.readyDisplay.nativeElement.querySelectorAll('code');
-    codeTags.forEach(codeTag => {
-      codeTag.innerHTML = codeTag.innerHTML.replace(/<br>/g, '\n');
-      const handler = ace.edit(codeTag);
-      handler.setOptions({
-        maxLines: Infinity,
-      });
-      handler.session.setMode("ace/mode/javascript");
-    })
-    setTimeout(() => {
-      this.richTextDisplay.nativeElement.innerHTML = this.readyDisplay.nativeElement.innerHTML;
-    }, 10);
-
     clonedTextNode.remove();
 
     clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
@@ -630,7 +631,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   // not using?
   setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled ? isDisabled : 'plaintext-only';
+    this.disabled = isDisabled;
   }
 
   markAsTouched() {
@@ -792,66 +793,5 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this._handleCodeBlock(event as InputEvent);
     this._contentChanged();
   }
-
-  // NOT SURE IF THIS BEING USED AT ALL
-  // _handleCodeBlock = (event: InputEvent):boolean => {
-  //   if ( event.data != '`' ) {
-  //     return false;
-  //   }
-  //   const selection = window.getSelection();
-  //   if ( !selection ) {
-  //     return false;
-  //   }
-  //   const endOffset = selection.getRangeAt(0).endOffset;
-  //   const focusNode = selection.focusNode;
-  //   if (focusNode && focusNode instanceof Text && focusNode.textContent) {
-  //     let text = focusNode.textContent;
-  //     let startIndex = 0;
-  //     if ( text.length > 2 && endOffset > 2 && text.substring(endOffset - 3, endOffset) == '```') {
-  //       const range = selection.getRangeAt(0);
-  //       range.setStart(focusNode, endOffset-3);
-  //       range.setEnd(focusNode, text.length);
-  //       const codeFragment = document.createElement('code');
-  //       const content = range.extractContents();
-  //       const contentElement = document.createTextNode(text.substring(endOffset));
-  //       codeFragment.appendChild(contentElement);
-  //       range.insertNode(codeFragment);
-  //       range.collapse();
-  //       return true;
-  //     }
-
-  //     const lastPos = text.lastIndexOf('`', endOffset - 2);
-  //     if ( text.length > 2 && lastPos > -1 && lastPos < endOffset - 2 ) {
-  //       const range = selection.getRangeAt(0);
-  //       range.setStart(focusNode, lastPos);
-  //       range.setEnd(focusNode, endOffset);
-  //       const codeFragment = document.createElement('span');
-  //       codeFragment.classList.add('code-inline');
-  //       const content = range.extractContents();
-  //       const contentElement = document.createTextNode(text.substring(lastPos + 1, endOffset -1));
-  //       codeFragment.appendChild(contentElement);
-  //       range.insertNode(codeFragment);
-  //       range.collapse();
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
-
-  // REMOVE: highlightjs code attempt
-  // private _wrapTag(tag: string, classLists: string[]): void {
-  //   const selection = document.getSelection();
-  //   if (selection) {
-  //     const range = selection.getRangeAt(0);
-  //     const tagTemplate = document.createElement('code');
-  //     const content = range.extractContents();
-  //     classLists.forEach(item => tagTemplate?.classList.add(item));
-
-  //     if (tagTemplate) {
-  //       tagTemplate.appendChild(content);
-  //       range.insertNode(tagTemplate);
-  //     }
-  //   }
-  // }
 
 }
