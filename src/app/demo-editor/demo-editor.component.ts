@@ -1,16 +1,13 @@
-import { Component, ViewChild, ViewEncapsulation, TemplateRef, OnInit, ElementRef, HostListener, ViewContainerRef } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
-import { CdkEditAction, CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting, IUploadReq } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
-import { HashtagComponent } from './hashtag/hashtag.component';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
 import { HttpClientModule } from '@angular/common/http';
-import { CustomEmbedComponent } from './custom-embed.component';
 
 import { uploadFile } from '@uploadcare/upload-client'
+
+import { HashtagComponent } from './hashtag/hashtag.component';
+import { CdkRichTextEditorComponent } from 'projects/rich-text-editor/src/lib/rich-text-editor/components/rte.component';
+import { CdkEditAction, CdkSuggestionItem, CdkSuggestionSetting, CdkToolbarItemSetting, IUploadReq, IIMageRes } from 'projects/rich-text-editor/src/lib/rich-text-editor/interfaces';
 
 export enum MarkTypes {
   bold = 'bold',
@@ -22,6 +19,8 @@ export enum MarkTypes {
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 
+// A work-in-progress to allow any custom inline-element into the RTE
+// we've been calling them Unusual-Inline-Components
 @Component({
   selector: 'app-dynamic-component',
   standalone: true,
@@ -39,137 +38,43 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 export class UnusualInlineComponent { }
 
 
-
 @Component({
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
+  styleUrls: ['./demo-editor.component.scss'],
   imports: [ 
     ReactiveFormsModule,
-    CdkRichTextEditorComponent, HttpClientModule, HashtagComponent, FormsModule, CommonModule, CustomEmbedComponent],
-  styleUrls: ['./demo-editor.component.scss'],
-  standalone: true,
-  encapsulation: ViewEncapsulation.None,
-  
+    CdkRichTextEditorComponent, 
+    HttpClientModule, 
+    HashtagComponent, 
+    FormsModule, 
+    CommonModule, 
+  ],
+  standalone: true
 })
 export class DemoEditorComponent implements OnInit{
-  @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true })
-  suggestionItemTemplate!: TemplateRef<any>;
-
-  @ViewChild('suggestionSelectionTemplate', { read: TemplateRef, static: true })
-  suggestionSelectionTemplate!: TemplateRef<any>;
-
-  @ViewChild('hashtagItemTemplate', { read: TemplateRef, static: true })
-  hashtagItemTemplate!: TemplateRef<any>;
-
-  @ViewChild('hashtagSelectionTemplate', { read: TemplateRef, static: true })
-  hashtagSelectionTemplate!: TemplateRef<any>;
-
-  @ViewChild('editor', {read: CdkRichTextEditorComponent, static: true})
-  editor! : CdkRichTextEditorComponent;
-
+  @ViewChild('suggestionItemTemplate', { read: TemplateRef, static: true }) suggestionItemTemplate!: TemplateRef<any>;
+  @ViewChild('suggestionSelectionTemplate', { read: TemplateRef, static: true }) suggestionSelectionTemplate!: TemplateRef<any>;
+  @ViewChild('hashtagItemTemplate', { read: TemplateRef, static: true }) hashtagItemTemplate!: TemplateRef<any>;
+  @ViewChild('hashtagSelectionTemplate', { read: TemplateRef, static: true }) hashtagSelectionTemplate!: TemplateRef<any>;
+  @ViewChild('editor', {read: CdkRichTextEditorComponent, static: true}) editor! : CdkRichTextEditorComponent;
+  // hashtag search results
   hashtagResults: CdkSuggestionItem[] = [];
-
+  // media uploaded and returned
+  uploadImageResult: IIMageRes = { url: "", elem: { src: "" } };
+  // the RTE formControl
   content = this.formBuilder.control({ value: "This is a test", disabled: false }, [Validators.required]);
-
-  constructor(private formBuilder: FormBuilder) { 
-    
-  }
-  ngOnInit(): void {
-    this.content.disable();
-  }
-
-  uploadImageRequest($uploadReq: IUploadReq): void {
-    uploadFile($uploadReq.file, {
-      publicKey: '54008102efbf320823b0',
-      store: 'auto',
-    }).then(result=>{
-      if (result?.cdnUrl && result?.name) {
-        $uploadReq.elem.src = result.cdnUrl + result.name;
-      }
-    }).catch(error=>{
-
-    });
-    
-  }
-
-  hashtagSearch(term: string): void {
-    this.hashtagResults = [{
-      key: "Red", value: "Red"
-    },
-    {
-      key: "Green", value: "Green"
-
-    },
-    {
-      key: "Blue", value: "Blue"
-
-    },];
-  }
-
-  onBtnClick = (action: CdkEditAction) => {
-
-    this.editor.triggerToolbarAction({action: action});
-  }
-
-  handleContent = (content: string) => {
-    console.log('content :>> ', content);
-    // this.embedContent = content;
-  }
-
-  preloadContent = () => {
-    
-  }
-
-  filter = (query: string, key: string) => {
-    return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
-  }
-
-  ngAfterContentChecked() {
-    
-    this.suggestions = [
-      {
-        trigger: "@",
-        tag: '-@@-',
-        itemTemplate: this.suggestionItemTemplate,
-        selectionTemplate: this.suggestionSelectionTemplate,
-        data: [{
-          key: "Jane Eyre", value: "Jane Eyre"
-        },
-        {
-          key: "William Shakespeare", value: "William Shakespeare"
-        },
-        {
-          key: "John Smith", value: "John Smith"
-        },],
-      },
-      {
-        trigger: "#",
-        tag: '-##-',
-        itemTemplate: this.hashtagItemTemplate,
-        selectionTemplate: this.hashtagSelectionTemplate,
-        data: [{
-          key: "Red", value: "Red"
-        },
-        {
-          key: "Green", value: "Green"
-
-        },
-        {
-          key: "Blue", value: "Blue"
-
-        },],
-      }
-    ];
-  }
-
+  // suggestion dropdown (hashtags / usernames)
+  suggestions: CdkSuggestionSetting[] = [];
+  suggestionEnabled = true;
+  // 
   toolbarItems: CdkToolbarItemSetting[] = [
     {
       action: 'bold',
     },
     {
       action: 'italic',
-    }
-    ,
+    },
     {
       action: 'heading1',
     },
@@ -181,16 +86,106 @@ export class DemoEditorComponent implements OnInit{
     },
     {
       action: 'component',
-      payload: UnusualInlineComponent,
+      // payload: UnusualInlineComponent,
     }
-  ]
-
-  suggestions: CdkSuggestionSetting[] = [
-
   ];
-
-  suggestionEnabled = true;
-
   embedContent = "";
 
+  constructor(private formBuilder: FormBuilder) { }
+
+  ngOnInit(): void {}
+
+  ngAfterContentChecked() {
+    // IMPORTANT! See readme. Hashtags are formatted to be saved in a database 
+    this.suggestions = [
+      {
+        trigger: "@",
+        tag: '-@@-',
+        itemTemplate: this.suggestionItemTemplate,
+        selectionTemplate: this.suggestionSelectionTemplate,
+        data: [
+          {
+            key: "Jane Eyre", value: "Jane Eyre"
+          },
+          {
+            key: "William Shakespeare", value: "William Shakespeare"
+          },
+          {
+            key: "John Smith", value: "John Smith"
+          },
+        ],
+      },
+      {
+        trigger: "#",
+        tag: '-##-',
+        itemTemplate: this.hashtagItemTemplate,
+        selectionTemplate: this.hashtagSelectionTemplate,
+        data: [
+          {
+            key: "Red", value: "Red"
+          },
+          {
+            key: "Green", value: "Green"
+          },
+          {
+            key: "Blue", value: "Blue"
+          },
+        ],
+      }
+    ];
+  }
+
+  // mock upload request - you will use your app's CDN
+  uploadImageRequest($uploadReq: IUploadReq): void {
+    uploadFile($uploadReq.file, {
+      publicKey: '54008102efbf320823b0',
+      store: 'auto',
+    }).then((result: any) => {
+      if (result?.cdnUrl && result?.name) {
+        $uploadReq.elem.src = result.cdnUrl + result.name;
+        // your image CDN response may be different but ultimately needs to be an IIMageRes
+        this.uploadImageResult = { url: result.cdnUrl, elem: { src: result.cdnUrl + result.name } };
+      }
+    }).catch((error: any) => console.log(error))
+  }
+
+  // mock hashtag search request - you will use your app's hashtag API
+  hashtagSearch(term: string): void {
+    this.hashtagResults = [
+      {
+        key: "Red", value: "Red"
+      },
+      {
+        key: "Green", value: "Green"
+      },
+      {
+        key: "Blue", value: "Blue"
+      },
+    ];
+  }
+
+  // the quick toolbar need improvement
+  onBtnClick = (action: CdkEditAction) => {
+    this.editor.triggerToolbarAction({action: action});
+  }
+
+  toggleDisabled(): void {
+    if (this.content.enabled) {
+      this.content.disable();
+    } else {
+      this.content.enable();
+    }
+  }
+
+  handleContent = (content: string) => {
+    console.log('content :>> ', content);
+    // this.embedContent = content;
+  }
+
+  // not sure what this was meant to be
+  preloadContent = () => {}
+
+  filter = (query: string, key: string) => {
+    return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
+  }
 }

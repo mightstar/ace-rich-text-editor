@@ -1,5 +1,3 @@
-<p>demo-editor works!</p>
-
 <ng-template #suggestionItemTemplate let-value let-active="active">
   <div class="suggestion-item" [class.selected]="active">
     <b>{{ value }}</b>
@@ -21,28 +19,25 @@
 <ng-template #hashtagSelectionTemplate let-value="value">
   <app-hashtag> #{{ value }} </app-hashtag>
 </ng-template>
-<h2>From a text below To RTE content</h2>
-  <div [innerText]="content"></div>
 
+<h2>Recruitler.com's Rich Text Editor</h2>
+  <!-- <div [innerText]="content"></div> -->
   <button (click)="onBtnClick('bold')">Bold</button>
   <button (click)="onBtnClick('italic')">Italic</button>
   <button (click)="onBtnClick('heading1')">Heading1</button>
-
+  <button (click)="toggleDisabled()">{{ this.content.enabled ? 'enable' : 'disable' }}</button>
   <button (click)="preloadContent()" style="float: right;">Preload</button>
-  <hr/>
+
 <div class="demo-editor">
   <recruitler-rte
     #editor
     [hashtagItemTemplate]="hashtagItemTemplate"
     [hashtagTemplate]="hashtagSelectionTemplate"
-    [hashtagResults]="hashtagResults"
     (hashtagRequest)="hashtagSearch($event)"
+    [hashtagResults]="hashtagResults"
     (uploadImageRequest)="uploadImageRequest($event)"
+    [uploadImageResult]="uploadImageResult"
     placeholder="What's your experience?"
     style="width: 100%;"
     [formControl]="content" />
-  
-  <hr/>
-  
-  <custom-embed [content]="embedContent" style="margin: 5px;"> </custom-embed>
 </div>

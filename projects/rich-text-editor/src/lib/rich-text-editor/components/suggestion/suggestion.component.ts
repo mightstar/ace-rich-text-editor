@@ -7,6 +7,7 @@ import {
   Output,
   TemplateRef,
   ViewChild,
+  ViewEncapsulation,
 } from "@angular/core";
 
 import { isRectEmpty } from "../../utils/DOM";
@@ -28,7 +29,6 @@ export class CdkSuggestionComponent {
   @ViewChild("container") container!: ElementRef<HTMLElement>;
   @Input("getSuggestionList") getSuggestionList?: (tag: string) => Promise<CdkSuggestionSetting>;
   @Output("cdkSuggestionSelected") select = new EventEmitter<CdkSuggestionSelect>();
-
   itemTemplate!: TemplateRef<any>;
   suggestions: CdkSuggestionItem[] = [];
   filteredSuggestions: CdkSuggestionItem[] = [];
@@ -45,70 +45,6 @@ export class CdkSuggestionComponent {
   defaultFilter = (query: string, item: CdkSuggestionItem) => {
     const search = item.search || item.key
     return search.toLowerCase().indexOf(query.toLowerCase()) != -1;
-  }
-
-  private _moveSelected = (step: number): boolean => {
-    let currentIndex = this.selectedIndex;
-    let newIndex = currentIndex == -1 ? 0 : currentIndex + step;
-
-    if (this.filteredSuggestions.length == 0) {
-      this.selectedIndex = -1;
-      return false;
-    }
-
-    newIndex = (newIndex + this.filteredSuggestions.length) % this.filteredSuggestions.length;
-    this.selectedIndex = newIndex;
-    const selectedChild = this.container.nativeElement.childNodes[newIndex];
-
-    if (selectedChild && selectedChild instanceof HTMLElement) {
-      let itemRect = selectedChild.getBoundingClientRect();
-      let containerRect = this.container.nativeElement.getBoundingClientRect()
-
-      if (itemRect.top < containerRect.top) {
-        this.container.nativeElement.scrollBy(0, itemRect.top - containerRect.top);
-      } else if (itemRect.bottom > containerRect.bottom) {
-        this.container.nativeElement.scrollBy(0, itemRect.bottom - containerRect.bottom);
-      }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  private _enterSuggestion = (event: Event) => {
-    if (this.selectedIndex >= 0 && this.selectedIndex < this.filteredSuggestions.length) {
-      event.preventDefault();
-      this.select.emit({
-        event: event,
-        item: this.filteredSuggestions[this.selectedIndex],
-        triggerIndex: this.triggerIndex
-      });
-    }
-  }
-
-  private _updateQuery = () => {
-    const selection = window.getSelection();
-    if (selection && this.startedNode && selection.rangeCount > 0) {
-      this.currentRange = selection.getRangeAt(0);
-
-      if (selection.focusNode && this.startedNode && selection.focusNode == this.startedNode) {
-        if (selection.focusOffset >= this.startedOffset) {
-          const text = (selection.focusNode as Text).textContent;
-          if (text) {
-            this.query = text.slice(this.startedOffset, selection.focusOffset);
-            this.filterItems(this.query);
-
-            (this.filteredSuggestions)
-            this.selectedIndex = 0;
-            return;
-          }
-        }
-      }
-    }
-
-    if (this.isVisible) {
-      this.show(false);
-    }
   }
 
   filterItems = (query: string) => {
@@ -231,8 +167,8 @@ export class CdkSuggestionComponent {
         this.setTrigger(suggestion);
         return this.show(true);
       })
-      .catch((reason) => {
-        console.log(reason);
+      .catch((reason: any) => {
+        // console.log(reason);
       });
     }
     if (this.isVisible) {
@@ -241,4 +177,69 @@ export class CdkSuggestionComponent {
     }
     return false;
   };
+
+
+  private _moveSelected = (step: number): boolean => {
+    let currentIndex = this.selectedIndex;
+    let newIndex = currentIndex == -1 ? 0 : currentIndex + step;
+
+    if (this.filteredSuggestions.length == 0) {
+      this.selectedIndex = -1;
+      return false;
+    }
+
+    newIndex = (newIndex + this.filteredSuggestions.length) % this.filteredSuggestions.length;
+    this.selectedIndex = newIndex;
+    const selectedChild = this.container.nativeElement.childNodes[newIndex];
+
+    if (selectedChild && selectedChild instanceof HTMLElement) {
+      let itemRect = selectedChild.getBoundingClientRect();
+      let containerRect = this.container.nativeElement.getBoundingClientRect()
+
+      if (itemRect.top < containerRect.top) {
+        this.container.nativeElement.scrollBy(0, itemRect.top - containerRect.top);
+      } else if (itemRect.bottom > containerRect.bottom) {
+        this.container.nativeElement.scrollBy(0, itemRect.bottom - containerRect.bottom);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private _enterSuggestion = (event: Event) => {
+    if (this.selectedIndex >= 0 && this.selectedIndex < this.filteredSuggestions.length) {
+      event.preventDefault();
+      this.select.emit({
+        event: event,
+        item: this.filteredSuggestions[this.selectedIndex],
+        triggerIndex: this.triggerIndex
+      });
+    }
+  }
+
+  private _updateQuery = () => {
+    const selection = window.getSelection();
+    if (selection && this.startedNode && selection.rangeCount > 0) {
+      this.currentRange = selection.getRangeAt(0);
+
+      if (selection.focusNode && this.startedNode && selection.focusNode == this.startedNode) {
+        if (selection.focusOffset >= this.startedOffset) {
+          const text = (selection.focusNode as Text).textContent;
+          if (text) {
+            this.query = text.slice(this.startedOffset, selection.focusOffset);
+            this.filterItems(this.query);
+
+            (this.filteredSuggestions)
+            this.selectedIndex = 0;
+            return;
+          }
+        }
+      }
+    }
+
+    if (this.isVisible) {
+      this.show(false);
+    }
+  }
 }

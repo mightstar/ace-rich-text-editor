@@ -1,5 +1,4 @@
 import { EmbeddedViewRef, TemplateRef, ViewContainerRef } from "@angular/core";
-import { convert } from 'html-to-text'; 
 
 export function isRectEmpty(rect: DOMRect) {
   return rect.x == 0 && rect.y == 0 && rect.right == 0 && rect.bottom == 0;
@@ -44,7 +43,6 @@ export function getRangeFromPosition(x: number, y: number): Range | null {
   return domRange;
 }
 
-
 export function findTextNodes(element: Element, pattern: string): Array<{ text: Text, index: number }> {
   let textNodes: Array<{ text: Text, index: number }> = [];
   let matches: IterableIterator<RegExpMatchArray> | null = null;
@@ -63,6 +61,21 @@ export function findTextNodes(element: Element, pattern: string): Array<{ text: 
   return textNodes;
 }
 
+function isHashtagElement(element: Element, pattern: RegExp): boolean {
+  let textNodes: Text[] = [];
+  element.childNodes.forEach(child => {
+    if (child.nodeType == Node.TEXT_NODE) {
+      textNodes.push(child as Text);
+    }
+  });
+
+  let text = textNodes.map(textNode => textNode.textContent).join('');
+
+  if (text.match(pattern)) {
+    return true;
+  }
+  return false;
+}
 
 export function createLiveHashtag(tag: string, value: any, template: TemplateRef<any>, viewContainer?: ViewContainerRef): HTMLElement {
   const element = document.createElement('span');
@@ -89,34 +102,7 @@ export function createLiveHashtag(tag: string, value: any, template: TemplateRef
   return element;
 }
 
-function isHashtagElement(element: Element, pattern: RegExp): boolean {
-  let textNodes: Text[] = [];
-  element.childNodes.forEach(child => {
-    if (child.nodeType == Node.TEXT_NODE) {
-      textNodes.push(child as Text);
-    }
-  });
-
-  let text = textNodes.map(textNode => textNode.textContent).join('');
-
-  if (text.match(pattern)) {
-    return true;
-  }
-  return false;
-}
-
-export function refactorToDisplay(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
-  makeLiveHashtags(root, tag, template, viewContainer);
-  let clonedTextNode = root.cloneNode(true) as HTMLElement;
-  // const codeTags = clonedTextNode.querySelectorAll('code');
-  // codeTags.forEach(codeTag=> {
-  //     codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
-  // })
-  root.innerHTML = clonedTextNode.innerHTML;
-  clonedTextNode.remove();
-}
-
-export function makeLiveHashtags(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
+export function makeLiveHashtags(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef): any {
   const selection = window.getSelection();
   if (selection == null) {
     return;
@@ -135,6 +121,8 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
       nodes.push(element);
     }
   });
+
+  let libHashtags = [];
 
   for (let element of nodes) {
     let textNodes = findTextNodes(element, hashtag);
@@ -160,12 +148,14 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
       selection.addRange(range);
       range.extractContents();
       range.insertNode(liveHashtag);
+      libHashtags.push(liveHashtag);
 
       textNodes = findTextNodes(element, hashtag);
       i -= 2;
     }
   }
   selection.removeAllRanges();
+  return libHashtags;
 }
 
 // Abandoned attempt to integrate highlight.js
@@ -180,4 +170,16 @@ export function makeLiveHashtags(root: HTMLElement, tag: string, template: Templ
 //     return hresult.value.replaceAll('\n', '<br/>');
 //   } 
 //   return "";
+// }
+
+// another <code> attempt
+// export function refactorToDisplay(root: HTMLElement, tag: string, template: TemplateRef<any>, viewContainer?: ViewContainerRef) {
+//   makeLiveHashtags(root, tag, template, viewContainer);
+//   let clonedTextNode = root.cloneNode(true) as HTMLElement;
+//   // const codeTags = clonedTextNode.querySelectorAll('code');
+//   // codeTags.forEach(codeTag=> {
+//   //     codeTag.innerHTML = convertHTML2Hightlighted(codeTag.innerHTML);
+//   // })
+//   root.innerHTML = clonedTextNode.innerHTML;
+//   clonedTextNode.remove();
 // }

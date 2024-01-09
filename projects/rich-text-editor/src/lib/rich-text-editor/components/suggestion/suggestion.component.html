@@ -1,7 +1,7 @@
-<div #container class="rte-suggestion-box">
+<ul #container class="rte-suggestion-box">
   @for (suggestion of filteredSuggestions; let i = $index; track suggestion.key) {  
-    <div (click)="onClick($event, suggestion)">
+    <li (click)="onClick($event, suggestion)">
       <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: suggestion.value, active: i == selectedIndex }" />
-    </div>
+    </li>
   }
-</div>
+</ul>

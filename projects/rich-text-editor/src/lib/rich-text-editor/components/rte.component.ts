@@ -29,7 +29,6 @@ import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolba
   encapsulation: ViewEncapsulation.None
 })
 export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterViewInit, AfterContentChecked {
-  @ViewChild('templates') templates!: ElementRef<HTMLElement>;
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
   @ViewChild('richTextDisplay') richTextDisplay! : ElementRef<HTMLElement>;
   @ViewChild('readyDisplay') readyDisplay! : ElementRef<HTMLElement>;
@@ -66,9 +65,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   @Output('hashtagRequest') hashtagRequest = new EventEmitter<string>();
   @Output() focus = new EventEmitter();
   @Output() blur = new EventEmitter();
-
-  // unused
-  private _currentContent: string = '';
   // vars
   touched = false;
   isSuggestionVisible: boolean = false;
@@ -183,10 +179,10 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       case "heading5":
         document.execCommand('formatBlock', false, 'h5');
         break;
-      case "code":
-        this._wrapTag('code', ['rte-code']);
+      // case "code":
+        // this._wrapTag('code', ['rte-code']);
         // document.execCommand('formatBlock', false, 'pre');
-        break;
+        // break;
       case "quote":
         document.execCommand('formatBlock', false, 'blockquote');
         break;
@@ -455,7 +451,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         return;
       }
       this.suggestionList$.pipe(take(1)).subscribe(
-        (hashtagList) => {
+        (hashtagList: any) => {
           if (hashtagList) {
             resolve({
               data: hashtagList,
@@ -479,87 +475,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
       this._enterSuggestion(event.item, event.triggerIndex);
     }
-  }
-
-  onDrop = (event: DragEvent) => {
-    if (!event.dataTransfer?.files[0]) return;
-
-    let file = event.dataTransfer.files[0];
-    let x = event.clientX;
-    let y = event.clientY;
-    if (file && file.type.startsWith('image/')) {
-      event.preventDefault();
-      event.stopPropagation();
-      const range = getRangeFromPosition(x, y);
-      const formData = new FormData();
-      file && formData.append('photo', file, file.name);
-
-      if (this.uploadImageRequest) {
-
-        file && loadImage(file, (dataURI: string) => {
-          setTimeout(() => {
-            let id: string;
-            let elem: (HTMLImageElement | undefined);
-            range && focusElementWithRange(this.richText.nativeElement, range);
-            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
-            range && this._contentChanged();
-            this.uploadImageRequest.emit({ file, elem });
-          }, 10);
-        });
-      } else {
-        file && loadImage(file, (dataURI: string) => {
-          setTimeout(() => {
-            let id: string;
-            let elem: (HTMLImageElement | undefined);
-            range && focusElementWithRange(this.richText.nativeElement, range);
-            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
-            range && this._contentChanged();
-          }, 10);
-        });
-      }
-    }
-  }
-
-  onDragOver = (event: Event) => {
-  }
-
-  onPaste = (event: ClipboardEvent) => {
-    if ( this.disabled) {
-      return;
-    }
-    const fileList = event.clipboardData?.files;
-    if (fileList && fileList.length > 0) {
-      event.preventDefault();
-      event.stopPropagation();
-      const pasteFile = (file: File) => {
-        loadImage(file, (dataURI: string) => {
-          const { id, elem } = this.insertImage(dataURI.toString(), 500, 500);
-          if (this.uploadImageRequest) {
-            this.isUploading = true;
-            this.uploadImageRequest.emit({file, elem});
-          }
-          this._contentChanged();
-        })
-      }
-
-      for (let i = 0; i < fileList.length; i++) {
-        let file = fileList.item(i);
-        file && pasteFile(file);
-      }
-      return;
-    }
-    const text = event.clipboardData?.getData("text")
-    if ( !text ) {
-      return;
-    }
-    document.execCommand('insertText', false, text)
-    event.preventDefault();
-    event.stopPropagation();
-
-  }
-
-  updateVerticalScroll(event: any): void {
-    this.richTextDisplay.nativeElement.scrollTop = event.target.scrollTop;
   }
 
   clickToolbarItem(item: ToolbarItem): void {
@@ -616,9 +531,11 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   loadContent = (content: string) => {
     this.richText.nativeElement.innerHTML = content;
-    makeLiveHashtags(this.richText.nativeElement, HASHTAG, this.hashtagTemplate, this.richTextContainer)
+    makeLiveHashtags(this.richText.nativeElement, HASHTAG, this.hashtagTemplate, this.richTextContainer);
     this._contentChanged();
   }
+
+ 
 
   private _setHashtagResults(items: CdkSuggestionItem[]): void {
     this.suggestionList$.next(items);
@@ -629,23 +546,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     elem.src = url;
     this.isUploading = false;
     this._contentChanged();
-  }
-
-  private _wrapTag(tag: string, classLists: string[]): void {
-    const selection = document.getSelection();
-    if (selection) {
-      const range = selection.getRangeAt(0);
-
-      // const tagTemplate = this.templates.nativeElement.querySelector(tag);
-      const tagTemplate = document.createElement('code');
-      const content = range.extractContents();
-      classLists.forEach(item => tagTemplate?.classList.add(item));
-
-      if (tagTemplate) {
-        tagTemplate.appendChild(content);
-        range.insertNode(tagTemplate);
-      }
-    }
   }
 
   private _isInlineTag(tag: string): boolean {
@@ -772,18 +672,13 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
         setTimeout(() => this._contentChanged(), 0);
 
         range.collapse();
-
-
       }
-
     }
     this.suggestion.show(false);
   }
 
   private _contentChanged = () => {
-    if (!this.richText?.nativeElement) {
-      return;
-    }
+    if (!this.richText?.nativeElement) return;
 
     let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     this.readyDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML.replace(/\n/g, '<br/>');
@@ -800,12 +695,12 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     setTimeout(() => {
       this.richTextDisplay.nativeElement.innerHTML = this.readyDisplay.nativeElement.innerHTML;
     }, 10);
-
+    
     clonedTextNode.remove();
 
     clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll('span[hashtag_component]');
-    hashtags.forEach(hashtag => {
+    hashtags.forEach((hashtag: any) => {
       if (hashtag.children.length == 2) {
         const textNode = document.createTextNode(hashtag.children[1].innerHTML);
         hashtag.replaceWith(textNode);
@@ -816,15 +711,14 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
     if (html.startsWith('SafeValue must use')) {
       this.onChange(html.substring(39, html.length - 35))
-    }
-    else {
+    } else {
       this.onChange(html)
     }
 
     clonedTextNode.remove();
   }
 
-  // CONTROL VALUE ACCESSOR METHODS
+  // CONTROL VALUE ACCESSOR & INPUT METHODS
   writeValue(value: string): void {
     setTimeout(() => this.loadContent(value), 10);
     this.content = value;
@@ -853,4 +747,220 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       this.touched = true;
     }
   }
+
+  // INPUT EVENT
+  onKeyDown = (event: KeyboardEvent) => {
+    if ( this.disabled) {
+      return;
+    }
+    if (event.ctrlKey && event.key === 'z') {
+      // empty?
+    } else if (event.ctrlKey && event.key === 'y') {
+      // empty?
+    }
+
+    if (this.suggestionEnabled) {
+      if (this.suggestion.onKeyDown(event)) {
+        return;
+      }
+    }
+  }
+
+  onMouseDown = (event: MouseEvent) => {
+    if ( this.disabled) return;
+    if (this.suggestionEnabled) this.suggestion.onMouseDown(event);
+  }
+
+  onMouseUp = (event: MouseEvent) => {
+    if (this.disabled) return;
+    setTimeout(() => {
+      const currentSelection = window.getSelection();
+      currentSelection && this.selectionChanged.emit(currentSelection);
+
+      if (currentSelection && currentSelection?.toString() != '') {
+        this.updateToolbar();
+        let quickToolbar = this.quickToolbarElement.nativeElement;
+        quickToolbar.classList.toggle('rte-show', true);
+        const PADDING = 10;
+        const range = currentSelection.getRangeAt(0);
+        let selectedRect = range.getBoundingClientRect();
+        const editorRect = this.richText.nativeElement.getBoundingClientRect();
+        const toolbarRect = this.quickToolbarElement.nativeElement.getBoundingClientRect();
+        if (isRectEmpty(selectedRect)) {
+
+          selectedRect = (range).getBoundingClientRect();
+        }
+        let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
+        let newX = selectedRect.x + selectedRect.width / 2 - toolbarRect.width / 2;
+
+        if (newX + toolbarRect.width > editorRect.right) {
+          newX = editorRect.right - toolbarRect.width - PADDING;
+        }
+
+        const x = newX - this.richText.nativeElement.getBoundingClientRect().x;
+        const y = newY - this.richText.nativeElement.getBoundingClientRect().y;
+
+        quickToolbar.style.top = y + 'px';
+        quickToolbar.style.left = x + 'px';
+
+      } else {
+        let quickToolbar = this.quickToolbarElement.nativeElement;
+        quickToolbar.classList.toggle('rte-show', false);
+      }
+    }, 0);
+  }
+
+  onDrop = (event: DragEvent) => {
+    if (!event.dataTransfer?.files[0]) return;
+
+    let file = event.dataTransfer.files[0];
+    let x = event.clientX;
+    let y = event.clientY;
+    if (file && file.type.startsWith('image/')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const range = getRangeFromPosition(x, y);
+      const formData = new FormData();
+      file && formData.append('photo', file, file.name);
+
+      if (this.uploadImageRequest) {
+
+        file && loadImage(file, (dataURI: string) => {
+          setTimeout(() => {
+            let id: string;
+            let elem: (HTMLImageElement | undefined);
+            range && focusElementWithRange(this.richText.nativeElement, range);
+            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
+            range && this._contentChanged();
+            this.uploadImageRequest.emit({ file, elem });
+          }, 10);
+        });
+      } else {
+        file && loadImage(file, (dataURI: string) => {
+          setTimeout(() => {
+            let id: string;
+            let elem: (HTMLImageElement | undefined);
+            range && focusElementWithRange(this.richText.nativeElement, range);
+            range && ({ id, elem } = this.insertImage(dataURI.toString(), 500, 500));
+            range && this._contentChanged();
+          }, 10);
+        });
+      }
+    }
+  }
+
+  onDragOver = (event: Event) => {}
+
+  onPaste = (event: ClipboardEvent) => {
+    if ( this.disabled) return;
+
+    const fileList = event.clipboardData?.files;
+    if (fileList && fileList.length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      const pasteFile = (file: File) => {
+        loadImage(file, (dataURI: string) => {
+          const { id, elem } = this.insertImage(dataURI.toString(), 500, 500);
+          if (this.uploadImageRequest) {
+            this.isUploading = true;
+            this.uploadImageRequest.emit({file, elem});
+          }
+          this._contentChanged();
+        })
+      }
+
+      for (let i = 0; i < fileList.length; i++) {
+        let file = fileList.item(i);
+        file && pasteFile(file);
+      }
+      return;
+    }
+    const text = event.clipboardData?.getData("text")
+    if ( !text ) {
+      return;
+    }
+    document.execCommand('insertText', false, text)
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onFocusIn = () => {
+    this.focus.emit();
+  }
+  onFocusOut() {
+    this.blur.emit();
+  }
+
+  onValueChange = (event: Event) => {
+    event = event as KeyboardEvent;
+    if (this.suggestionEnabled) {
+      this.suggestion.onValueChange(event);
+    }
+
+    // this._handleCodeBlock(event as InputEvent);
+
+    this._contentChanged();
+  }  
+
+  // NOT SURE IF THIS BEING USED AT ALL
+  // _handleCodeBlock = (event: InputEvent):boolean => {
+  //   if ( event.data != '`' ) {
+  //     return false;
+  //   }
+  //   const selection = window.getSelection();
+  //   if ( !selection ) {
+  //     return false;
+  //   }
+  //   const endOffset = selection.getRangeAt(0).endOffset;
+  //   const focusNode = selection.focusNode;
+  //   if (focusNode && focusNode instanceof Text && focusNode.textContent) {
+  //     let text = focusNode.textContent;
+  //     let startIndex = 0;
+  //     if ( text.length > 2 && endOffset > 2 && text.substring(endOffset - 3, endOffset) == '```') {
+  //       const range = selection.getRangeAt(0);
+  //       range.setStart(focusNode, endOffset-3);
+  //       range.setEnd(focusNode, text.length);
+  //       const codeFragment = document.createElement('code');
+  //       const content = range.extractContents();
+  //       const contentElement = document.createTextNode(text.substring(endOffset));
+  //       codeFragment.appendChild(contentElement);
+  //       range.insertNode(codeFragment);
+  //       range.collapse();
+  //       return true;
+  //     }
+
+  //     const lastPos = text.lastIndexOf('`', endOffset - 2);
+  //     if ( text.length > 2 && lastPos > -1 && lastPos < endOffset - 2 ) {
+  //       const range = selection.getRangeAt(0);
+  //       range.setStart(focusNode, lastPos);
+  //       range.setEnd(focusNode, endOffset);
+  //       const codeFragment = document.createElement('span');
+  //       codeFragment.classList.add('code-inline');
+  //       const content = range.extractContents();
+  //       const contentElement = document.createTextNode(text.substring(lastPos + 1, endOffset -1));
+  //       codeFragment.appendChild(contentElement);
+  //       range.insertNode(codeFragment);
+  //       range.collapse();
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
+  // REMOVE: highlightjs code attempt
+  // private _wrapTag(tag: string, classLists: string[]): void {
+  //   const selection = document.getSelection();
+  //   if (selection) {
+  //     const range = selection.getRangeAt(0);
+  //     const tagTemplate = document.createElement('code');
+  //     const content = range.extractContents();
+  //     classLists.forEach(item => tagTemplate?.classList.add(item));
+
+  //     if (tagTemplate) {
+  //       tagTemplate.appendChild(content);
+  //       range.insertNode(tagTemplate);
+  //     }
+  //   }
+  // }
+
 }
