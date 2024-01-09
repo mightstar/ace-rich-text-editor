@@ -3,6 +3,15 @@ rte-suggestion {
   display: inline-block;
 }
 
+.ready-display {
+  code {
+    display: block;
+    padding: 3px;
+    min-height: 1rem;
+  }
+}
+
+
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -41,7 +50,7 @@ rte-suggestion {
 
   code {
     font-family: monospace;
-    background-color: #aaa;
+    background-color: #fff;
     display: block;
     padding: 3px;
     min-height: 1rem;
@@ -56,7 +65,7 @@ rte-suggestion {
     min-height: 1rem;
     min-width: 1rem;
   }
-  
+
 
   ol {
   }
@@ -80,7 +89,7 @@ rte-suggestion {
 
   position: absolute !important;
   top: 0;
-  left: 0; 
+  left: 0;
   width: calc(100% - 24px);
   height: calc(100% - 24px);
   padding: 12px;
@@ -135,7 +144,8 @@ div.rte-text-editor-hidden {
   code {
     font-family: monospace;
     display: block;
-    padding: 3px;
+    padding: 0px 0px 0px 44px;
+    font-size: 12px;
     min-height: 1rem;
   }
 
@@ -252,7 +262,7 @@ div.rte-text-editor:focus {
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   min-width: 0;
-  overflow: hidden;  
+  overflow: hidden;
   border-color: #aaa transparent transparent transparent;
   &::after,
   &::before {
