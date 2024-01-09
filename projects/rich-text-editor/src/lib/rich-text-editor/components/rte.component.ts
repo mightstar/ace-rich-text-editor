@@ -613,7 +613,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   // CONTROL VALUE ACCESSOR & INPUT METHODS
   writeValue(value: string): void {
-    setTimeout(() => this.loadContent(value), 10);
+    setTimeout(() => {this.loadContent(value); this.formatCodeEditor();}, 10);
     this.content = value;
   }
 
