@@ -3,6 +3,10 @@ import { AfterContentChecked, AfterViewInit, Component, ElementRef, EmbeddedView
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, take } from 'rxjs';
 
+import * as ace from "ace-builds";
+import "ace-builds/src-noconflict/ace";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/mode-javascript";
 import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
 import { HASHTAG, HASHTAG_TRIGGER, TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
@@ -26,6 +30,9 @@ import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolba
 })
 export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterViewInit, AfterContentChecked {
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
+  @ViewChild('richTextDisplay') richTextDisplay! : ElementRef<HTMLElement>;
+  @ViewChild('readyDisplay') readyDisplay! : ElementRef<HTMLElement>;
+  // @ViewChild('codeDialog') codeDialog! : any;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbarElement!: ElementRef<HTMLElement>;
   @ViewChild('suggestion') suggestion!: CdkSuggestionComponent;
@@ -45,11 +52,11 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this._setImage(val);
   }
   // USER INPUTS
-  @Input('disabled') set disabledFn(val: boolean) {
-    // this.setDisabledState(val);
-  }
-  // @Input() disabled = false;
-  disabled = false;
+  // @Input() set disabled(val: boolean) {
+  //   this.setDisabledState(val);
+  // }
+  @Input() disabled: boolean | string = false;
+  // disabled = false;
 
   @Input() placeholder: string = "";
   // OUTPUTS
@@ -66,6 +73,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   suggestionList$: BehaviorSubject<CdkSuggestionItem[]> = new BehaviorSubject<CdkSuggestionItem[]>([]);
   suggestionSelectionTemplate!: TemplateRef<any>;
 
+  // handlerEditor: any;
   constructor(private domSantanizer: SafeDOMPipe) {
     this.toolbarItems = TOOLBAR_ITEMS.map(item => ({ action: item.action, icon: item.icon, active: false })).filter(item => item.action !== 'component');
   }
@@ -283,6 +291,51 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     return selectorName ? this._isChildOfTag(this._getSelectedNode(), selectorName) : false;
   }
 
+  _handleCodeBlock = (event: InputEvent):boolean => {
+    if ( event.data != '`' ) {
+      return false;
+    }
+    const selection = window.getSelection();
+    if ( !selection ) {
+      return false;
+    }
+    const endOffset = selection.getRangeAt(0).endOffset;
+    const focusNode = selection.focusNode;
+    if (focusNode && focusNode instanceof Text && focusNode.textContent) {
+      let text = focusNode.textContent;
+      let startIndex = 0;
+      if ( text.length > 2 && endOffset > 2 && text.substring(endOffset - 3, endOffset) == '```') {
+        const range = selection.getRangeAt(0);
+        range.setStart(focusNode, endOffset-3);
+        range.setEnd(focusNode, text.length);
+        const codeFragment = document.createElement('code');
+        // codeFragment.id = "targetEditor";
+        const content = range.extractContents();
+        const contentElement = document.createTextNode(text.substring(endOffset));
+        if(contentElement.data !== '\n')codeFragment.appendChild(contentElement);
+        range.insertNode(codeFragment);
+        range.collapse();
+        return true;
+      }
+
+      const lastPos = text.lastIndexOf('`', endOffset - 2);
+      if ( text.length > 2 && lastPos > -1 && lastPos < endOffset - 2 ) {
+        const range = selection.getRangeAt(0);
+        range.setStart(focusNode, lastPos);
+        range.setEnd(focusNode, endOffset);
+        const codeFragment = document.createElement('span');
+        codeFragment.classList.add('code-inline');
+        const content = range.extractContents();
+        const contentElement = document.createTextNode(text.substring(lastPos + 1, endOffset -1));
+        codeFragment.appendChild(contentElement);
+        range.insertNode(codeFragment);
+        range.collapse();
+        return true;
+      }
+    }
+    return false;
+  }
+
   getSuggestionList = (tag: string) => {
     return new Promise<CdkSuggestionSetting>((resolve, reject) => {
       if (tag != HASHTAG_TRIGGER) {
@@ -308,7 +361,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     });
   }
 
-  onSuggestionSelected = (event: CdkSuggestionSelect) => {
+  onSuggestionSelected = (event: any) => {
     if (this.suggestionEnabled) {
       this.suggestion.currentRange && focusElementWithRangeIfNotFocused(this.richText.nativeElement, this.suggestion.currentRange);
 
@@ -350,13 +403,31 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this.updateToolbar();
   }
 
+  // showCodeEditor(value: string, type: string = "javascript") {
+  //   this.handlerEditor.setValue(value);
+  //   this.codeDialog.nativeElement.showModal();
+  // }
+
+  // saveCode() {
+  //   const code: string = this.handlerEditor.getValue();
+  //   this.richText.nativeElement.querySelectorAll('#targetEditor')[0].innerHTML = code.replace(/\n/g, '<br/>');
+  //   this._contentChanged();
+  //   this.codeDialog.nativeElement.close();
+  // }
+
+  getEditorCode = () => {
+    const editorCode = this.richText.nativeElement.innerHTML;
+    console.log("Editor Code: ", editorCode);
+    alert(editorCode);
+  }
+
   loadContent = (content: string) => {
     this.richText.nativeElement.innerHTML = content;
     makeLiveHashtags(this.richText.nativeElement, HASHTAG, this.hashtagTemplate, this.richTextContainer);
     this._contentChanged();
   }
 
- 
+
 
   private _setHashtagResults(items: CdkSuggestionItem[]): void {
     this.suggestionList$.next(items);
@@ -502,6 +573,21 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     if (!this.richText?.nativeElement) return;
 
     let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
+    this.readyDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML.replace(/\n/g, '<br/>');
+
+    const codeTags = this.readyDisplay.nativeElement.querySelectorAll('code');
+    codeTags.forEach(codeTag => {
+      codeTag.innerHTML = codeTag.innerHTML.replace(/<br>/g, '\n');
+      const handler = ace.edit(codeTag);
+      handler.setOptions({
+        maxLines: Infinity,
+      });
+      handler.session.setMode("ace/mode/javascript");
+    })
+    setTimeout(() => {
+      this.richTextDisplay.nativeElement.innerHTML = this.readyDisplay.nativeElement.innerHTML;
+    }, 10);
+
     clonedTextNode.remove();
 
     clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
@@ -544,7 +630,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   // not using?
   setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
+    this.disabled = isDisabled ? isDisabled : 'plaintext-only';
   }
 
   markAsTouched() {
@@ -703,10 +789,9 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
       this.suggestion.onValueChange(event);
     }
 
-    // this._handleCodeBlock(event as InputEvent);
-
+    this._handleCodeBlock(event as InputEvent);
     this._contentChanged();
-  }  
+  }
 
   // NOT SURE IF THIS BEING USED AT ALL
   // _handleCodeBlock = (event: InputEvent):boolean => {
