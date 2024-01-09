@@ -1,3 +1,17 @@
+rte-suggestion {
+  position: absolute;
+  display: inline-block;
+}
+
+.ready-display {
+  code {
+    display: block;
+    padding: 3px;
+    min-height: 1rem;
+  }
+}
+
+
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -36,10 +50,22 @@
 
   code {
     font-family: monospace;
-    background-color: #aaa;
-
+    background-color: #fff;
+    display: block;
     padding: 3px;
+    min-height: 1rem;
   }
+
+  .code-inline {
+    font-family: monospace;
+    background-color: #aaa;
+    display: inline;
+    padding: 3px;
+    color:#983432;
+    min-height: 1rem;
+    min-width: 1rem;
+  }
+
 
   ol {
   }
@@ -53,13 +79,26 @@
   img {
   }
 
-  a, abbr, b, button, br, button, cite, code, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
+  a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
     display: inline ;
   }
 
   div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
     display: block;
   }
+
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  padding: 12px;
+  overflow-wrap: break-word;
+  user-select: none;
+  color:unset !important;
+  z-index: 0 !important;
+  overflow: auto;
+  display: inline-block;
 }
 
 .rte-wrapper {
@@ -69,14 +108,75 @@
   height: 100%;
 }
 
-div.rte-text-editor {
-  display: block;
-  height: 100%;
-  width: 100%;
+div.rte-text-editor-hidden {
+  h1 {
+  }
+
+  h2 {
+  }
+
+  h3 {
+  }
+
+  h4 {
+  }
+
+  h5 {
+  }
+
+  b {
+  }
+
+  i {
+  }
+
+  u {
+  }
+
+  blockquote {
+    border-left: 2px solid transparent;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 10px;
+    font-style: italic;
+  }
+
+  code {
+    font-family: monospace;
+    display: block;
+    padding: 0px 0px 0px 44px;
+    font-size: 12px;
+    min-height: 1rem;
+  }
+
+  .code-inline {
+    font-family: monospace;
+    display: inline;
+    padding: 3px;
+    min-height: 1rem;
+    min-width: 1rem;
+  }
+
+  a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
+    display: inline ;
+  }
+
+  div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
+    display: block;
+  }
+
+  position: relative;
+  display: inline-block;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
   padding: 12px;
-  overflow: auto;
   background-color: inherit;
   border: none;
+  color:transparent;
+  z-index: 1;
+  caret-color: black;
+  overflow: auto;
+
 }
 
 div.rte-text-editor:focus {
@@ -162,7 +262,7 @@ div.rte-text-editor:focus {
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   min-width: 0;
-  overflow: hidden;  
+  overflow: hidden;
   border-color: #aaa transparent transparent transparent;
   &::after,
   &::before {

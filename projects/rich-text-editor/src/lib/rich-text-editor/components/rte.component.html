@@ -1,23 +1,36 @@
 <!-- /Controls -->
 <!-- Rich text -->
+<!-- <dialog #codeDialog class="code-editor">
+  <div id='aceEditor' style="width:100%; height: 100%;"></div>
+  <div>
+    <button (click)="saveCode()">OK</button>
+  </div>
+</dialog> -->
+
 <ng-template #defaultToolbar>
   <div class="rte-toolbar-btn-group rte-popup">
     @for (item of toolbarItems; track item.action) {
-      <button
-        class="rte-toolbar-btn rte-active"
-        [ngClass]="{ 'rte-active': item.active }"
-        (click)="clickToolbarItem(item)">
-        <span [innerHTML]="item.icon"></span>
-      </button>
+    <button
+      class="rte-toolbar-btn rte-active"
+      [ngClass]="{ 'rte-active': item.active }"
+      (click)="clickToolbarItem(item)">
+      <span [innerHTML]="item.icon"></span>
+    </button>
     }
   </div>
 </ng-template>
 
+<button (click)="getEditorCode()">Get Editor Code (Dev)</button>
+
+<div #templates style="display: none">
+  <code></code>
+</div>
+
 <div class="rte-wrapper">
   @if (isUploading) {
-    <div class="rte-uploading-progress">
-      <rte-circular-progress />
-    </div>
+  <div class="rte-uploading-progress">
+    <rte-circular-progress />
+  </div>
   }
 
   <div #quickToolbar class="rte-quick-toolbar">
@@ -27,12 +40,22 @@
   <rte-suggestion
     #suggestion
     [getSuggestionList]="getSuggestionList"
-    (cdkSuggestionSelected)="onSuggestionSelected($event) "/>
+    (cdkSuggestionSelected)="onSuggestionSelected($event)"/>
+
+  <div
+    #richTextDisplay
+    class="rte-text-editor">
+  </div>
+
+  <div class="ready-display" style="position: fixed; z-index: -100;" #readyDisplay>
+
+  </div>
 
   <div
     #richText
-    class="rte-text-editor"
-    [contentEditable]="!disabled"
+    class="rte-text-editor-hidden"
+    [contentEditable]="disabled"
+    (cdkSuggestionSelected)="onSuggestionSelected($event) "/>
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"
     (focus)="onFocusIn()"
