@@ -26,7 +26,7 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list'];
   standalone: true,
   template: `
     <span style="border: 1px solid grey">
-      <b>Unusual: </b>  
+      <b>Unusual: </b>
       <a href="#" onClick="window.alert('hashtag');">
         <span cdkContent>
           <ng-content></ng-content>
@@ -42,13 +42,13 @@ export class UnusualInlineComponent { }
   selector: 'app-demo-editor',
   templateUrl: './demo-editor.component.html',
   styleUrls: ['./demo-editor.component.scss'],
-  imports: [ 
+  imports: [
     ReactiveFormsModule,
-    CdkRichTextEditorComponent, 
-    HttpClientModule, 
-    HashtagComponent, 
-    FormsModule, 
-    CommonModule, 
+    CdkRichTextEditorComponent,
+    HttpClientModule,
+    HashtagComponent,
+    FormsModule,
+    CommonModule,
   ],
   standalone: true
 })
@@ -63,11 +63,11 @@ export class DemoEditorComponent implements OnInit{
   // media uploaded and returned
   uploadImageResult: IIMageRes = { url: "", elem: { src: "" } };
   // the RTE formControl
-  content = this.formBuilder.control({ value: "This is a test", disabled: false }, [Validators.required]);
+  content = this.formBuilder.control({ value: "This is a test <code> Revert </code> Sample", disabled: false }, [Validators.required]);
   // suggestion dropdown (hashtags / usernames)
   suggestions: CdkSuggestionSetting[] = [];
   suggestionEnabled = true;
-  // 
+  //
   toolbarItems: CdkToolbarItemSetting[] = [
     {
       action: 'bold',
@@ -96,7 +96,7 @@ export class DemoEditorComponent implements OnInit{
   ngOnInit(): void {}
 
   ngAfterContentChecked() {
-    // IMPORTANT! See readme. Hashtags are formatted to be saved in a database 
+    // IMPORTANT! See readme. Hashtags are formatted to be saved in a database
     this.suggestions = [
       {
         trigger: "@",
