@@ -3,10 +3,6 @@ import { AfterContentChecked, AfterViewInit, Component, ElementRef, EmbeddedView
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, take } from 'rxjs';
 
-import * as ace from "ace-builds";
-import "ace-builds/src-noconflict/ace";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/mode-javascript";
 import { focusElementWithRange, focusElementWithRangeIfNotFocused, getRangeFromPosition, isRectEmpty, makeLiveHashtags } from '../utils/DOM';
 import { HASHTAG, HASHTAG_TRIGGER, TOOLBAR_ITEMS } from '../utils/config';
 import { loadImage } from '../utils/image';
@@ -30,9 +26,6 @@ import { CdkSuggestionItem, CdkSuggestionSelect, CdkSuggestionSetting, CdkToolba
 })
 export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterViewInit, AfterContentChecked {
   @ViewChild('richText') richText!: ElementRef<HTMLElement>;
-  @ViewChild('richTextDisplay') richTextDisplay! : ElementRef<HTMLElement>;
-  @ViewChild('readyDisplay') readyDisplay! : ElementRef<HTMLElement>;
-  // @ViewChild('codeDialog') codeDialog! : any;
   @ViewChild('richText', { read: ViewContainerRef }) richTextContainer!: ViewContainerRef;
   @ViewChild('quickToolbar') quickToolbarElement!: ElementRef<HTMLElement>;
   @ViewChild('suggestion') suggestion!: CdkSuggestionComponent;
@@ -52,11 +45,11 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     this._setImage(val);
   }
   // USER INPUTS
-  // @Input() set disabled(val: boolean) {
-  //   this.setDisabledState(val);
-  // }
-  @Input() disabled: boolean | string = false;
-  // disabled = false;
+  @Input('disabled') set disabledFn(val: boolean) {
+    // this.setDisabledState(val);
+  }
+  // @Input() disabled = false;
+  disabled = false;
 
   @Input() placeholder: string = "";
   // OUTPUTS
@@ -73,7 +66,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
   suggestionList$: BehaviorSubject<CdkSuggestionItem[]> = new BehaviorSubject<CdkSuggestionItem[]>([]);
   suggestionSelectionTemplate!: TemplateRef<any>;
 
-  // handlerEditor: any;
   constructor(private domSantanizer: SafeDOMPipe) {
     this.toolbarItems = TOOLBAR_ITEMS.map(item => ({ action: item.action, icon: item.icon, active: false })).filter(item => item.action !== 'component');
   }
@@ -291,159 +283,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     return selectorName ? this._isChildOfTag(this._getSelectedNode(), selectorName) : false;
   }
 
-  onMouseDown = (event: MouseEvent) => {
-    if ( this.disabled) {
-      return;
-    }
-    if (this.suggestionEnabled) this.suggestion.onMouseDown(event);
-  }
-
-  onMouseUp = (event: MouseEvent) => {
-    if ( this.disabled) {
-      return;
-    }
-    setTimeout(() => {
-      const currentSelection = window.getSelection();
-      currentSelection && this.selectionChanged.emit(currentSelection);
-
-      if (currentSelection && currentSelection?.toString() != '') {
-        this.updateToolbar();
-        let quickToolbar = this.quickToolbarElement.nativeElement;
-        quickToolbar.classList.toggle('rte-show', true);
-        const PADDING = 10;
-        const range = currentSelection.getRangeAt(0);
-        let selectedRect = range.getBoundingClientRect();
-        const editorRect = this.richText.nativeElement.getBoundingClientRect();
-        const toolbarRect = this.quickToolbarElement.nativeElement.getBoundingClientRect();
-        if (isRectEmpty(selectedRect)) {
-
-          selectedRect = (range).getBoundingClientRect();
-        }
-        let newY = selectedRect.y - quickToolbar.getBoundingClientRect().height - PADDING;
-        let newX = selectedRect.x + selectedRect.width / 2 - toolbarRect.width / 2;
-
-        if (newX + toolbarRect.width > editorRect.right) {
-          newX = editorRect.right - toolbarRect.width - PADDING;
-        }
-
-        const x = newX - this.richText.nativeElement.getBoundingClientRect().x;
-        const y = newY - this.richText.nativeElement.getBoundingClientRect().y;
-
-        quickToolbar.style.top = y + 'px';
-        quickToolbar.style.left = x + 'px';
-
-      } else {
-        let quickToolbar = this.quickToolbarElement.nativeElement;
-        quickToolbar.classList.toggle('rte-show', false);
-      }
-    }, 0);
-  }
-
-  onKeyDown = (event: KeyboardEvent) => {
-    if ( this.disabled) {
-      return;
-    }
-    if (event.ctrlKey && event.key === 'z') {
-      // empty?
-    } else if (event.ctrlKey && event.key === 'y') {
-      // empty?
-    }
-
-    if (this.suggestionEnabled) {
-      if (this.suggestion.onKeyDown(event)) {
-        return;
-      }
-    }
-
-    // var selection = document.getSelection();
-    // if (event.key == "Enter" && selection) {
-    //   var range = selection.getRangeAt(0),
-    //     br = document.createElement("br");
-
-    //   range.deleteContents();
-
-    //   range.insertNode(br);
-    //   var newLine = document.createTextNode('\n');
-
-    //   range.setStartAfter(br);
-    //   range.setEndAfter(br);
-
-    //   range.insertNode(newLine);
-
-    //   selection.removeAllRanges();
-    //   selection.addRange(range);
-    //   event.preventDefault();
-
-    //   this._contentChanged();
-    // }
-
-
-  }
-
-  onFocusIn = () => {
-    this.focus.emit();
-  }
-
-  onFocusOut() {
-    this.blur.emit();
-  }
-
-  onValueChange = (event: Event) => {
-    event = event as KeyboardEvent;
-    if (this.suggestionEnabled) {
-      this.suggestion.onValueChange(event);
-    }
-
-    this._handleCodeBlock(event as InputEvent);
-
-    this._contentChanged();
-  }
-
-  _handleCodeBlock = (event: InputEvent):boolean => {
-    if ( event.data != '`' ) {
-      return false;
-    }
-    const selection = window.getSelection();
-    if ( !selection ) {
-      return false;
-    }
-    const endOffset = selection.getRangeAt(0).endOffset;
-    const focusNode = selection.focusNode;
-    if (focusNode && focusNode instanceof Text && focusNode.textContent) {
-      let text = focusNode.textContent;
-      let startIndex = 0;
-      if ( text.length > 2 && endOffset > 2 && text.substring(endOffset - 3, endOffset) == '```') {
-        const range = selection.getRangeAt(0);
-        range.setStart(focusNode, endOffset-3);
-        range.setEnd(focusNode, text.length);
-        const codeFragment = document.createElement('code');
-        // codeFragment.id = "targetEditor";
-        const content = range.extractContents();
-        const contentElement = document.createTextNode(text.substring(endOffset));
-        if(contentElement.data !== '\n')codeFragment.appendChild(contentElement);
-        range.insertNode(codeFragment);
-        range.collapse();
-        return true;
-      }
-
-      const lastPos = text.lastIndexOf('`', endOffset - 2);
-      if ( text.length > 2 && lastPos > -1 && lastPos < endOffset - 2 ) {
-        const range = selection.getRangeAt(0);
-        range.setStart(focusNode, lastPos);
-        range.setEnd(focusNode, endOffset);
-        const codeFragment = document.createElement('span');
-        codeFragment.classList.add('code-inline');
-        const content = range.extractContents();
-        const contentElement = document.createTextNode(text.substring(lastPos + 1, endOffset -1));
-        codeFragment.appendChild(contentElement);
-        range.insertNode(codeFragment);
-        range.collapse();
-        return true;
-      }
-    }
-    return false;
-  }
-
   getSuggestionList = (tag: string) => {
     return new Promise<CdkSuggestionSetting>((resolve, reject) => {
       if (tag != HASHTAG_TRIGGER) {
@@ -509,24 +348,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     }
 
     this.updateToolbar();
-  }
-
-  // showCodeEditor(value: string, type: string = "javascript") {
-  //   this.handlerEditor.setValue(value);
-  //   this.codeDialog.nativeElement.showModal();
-  // }
-
-  // saveCode() {
-  //   const code: string = this.handlerEditor.getValue();
-  //   this.richText.nativeElement.querySelectorAll('#targetEditor')[0].innerHTML = code.replace(/\n/g, '<br/>');
-  //   this._contentChanged();
-  //   this.codeDialog.nativeElement.close();
-  // }
-
-  getEditorCode = () => {
-    const editorCode = this.richText.nativeElement.innerHTML;
-    console.log("Editor Code: ", editorCode);
-    alert(editorCode);
   }
 
   loadContent = (content: string) => {
@@ -681,21 +502,6 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
     if (!this.richText?.nativeElement) return;
 
     let clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
-    this.readyDisplay.nativeElement.innerHTML = clonedTextNode.innerHTML.replace(/\n/g, '<br/>');
-
-    const codeTags = this.readyDisplay.nativeElement.querySelectorAll('code');
-    codeTags.forEach(codeTag => {
-      codeTag.innerHTML = codeTag.innerHTML.replace(/<br>/g, '\n');
-      const handler = ace.edit(codeTag);
-      handler.setOptions({
-        maxLines: Infinity,
-      });
-      handler.session.setMode("ace/mode/javascript");
-    })
-    setTimeout(() => {
-      this.richTextDisplay.nativeElement.innerHTML = this.readyDisplay.nativeElement.innerHTML;
-    }, 10);
-    
     clonedTextNode.remove();
 
     clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
@@ -738,7 +544,7 @@ export class CdkRichTextEditorComponent implements ControlValueAccessor, AfterVi
 
   // not using?
   setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled ? 'plaintext-only' : isDisabled;
+    this.disabled = isDisabled;
   }
 
   markAsTouched() {
