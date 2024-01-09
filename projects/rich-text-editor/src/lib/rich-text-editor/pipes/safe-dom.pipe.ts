@@ -6,7 +6,6 @@ import { DomSanitizer } from '@angular/platform-browser';
   standalone: true 
 })
 export class SafeDOMPipe implements PipeTransform {
-
   constructor(private sanitizer: DomSanitizer) {}
 
   transform(embedContent: string) {

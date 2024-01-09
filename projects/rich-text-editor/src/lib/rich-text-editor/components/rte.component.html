@@ -13,33 +13,25 @@
   </div>
 </ng-template>
 
-<div #templates style="display: none">
-  <code></code>
-</div>
-
 <div class="rte-wrapper">
-  <div #quickToolbar class="rte-quick-toolbar">
-    <ng-container *ngTemplateOutlet="toolbarTemplate"></ng-container>
-  </div>
   @if (isUploading) {
     <div class="rte-uploading-progress">
       <rte-circular-progress />
     </div>
   }
+
+  <div #quickToolbar class="rte-quick-toolbar">
+    <ng-container *ngTemplateOutlet="toolbarTemplate" />
+  </div>
+  
   <rte-suggestion
     #suggestion
     [getSuggestionList]="getSuggestionList"
-    (cdkSuggestionSelected)="onSuggestionSelected($event)"/>
-
-  <div
-    #richTextDisplay
-    class="rte-text-editor">
-    
-  </div>
+    (cdkSuggestionSelected)="onSuggestionSelected($event) "/>
 
   <div
     #richText
-    class="rte-text-editor-hidden"
+    class="rte-text-editor"
     [contentEditable]="!disabled"
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"
@@ -49,8 +41,7 @@
     (mouseup)="onMouseUp($event)"
     (input)="onValueChange($event)"
     (drop)="onDrop($event)"
-    (paste)="onPaste($event)"
-    (scroll)="updateVerticalScroll($event)">
+    (paste)="onPaste($event)">
     <ng-content></ng-content>
   </div>
 </div>
