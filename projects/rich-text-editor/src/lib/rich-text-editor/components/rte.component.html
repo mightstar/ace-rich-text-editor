@@ -3,36 +3,43 @@
 <ng-template #defaultToolbar>
   <div class="rte-toolbar-btn-group rte-popup">
     @for (item of toolbarItems; track item.action) {
-      <button
-        class="rte-toolbar-btn rte-active"
-        [ngClass]="{ 'rte-active': item.active }"
-        (click)="clickToolbarItem(item)">
-        <span [innerHTML]="item.icon"></span>
-      </button>
+    <button
+      class="rte-toolbar-btn rte-active"
+      [ngClass]="{ 'rte-active': item.active }"
+      (click)="clickToolbarItem(item)"
+    >
+      <span [innerHTML]="item.icon"></span>
+    </button>
     }
   </div>
 </ng-template>
 
+<div #templates style="display: none">
+  <code></code>
+</div>
+
 <div class="rte-wrapper">
   @if (isUploading) {
-    <div class="rte-uploading-progress">
-      <rte-circular-progress />
-    </div>
+  <div class="rte-uploading-progress">
+    <rte-circular-progress />
+  </div>
   }
 
   <div #quickToolbar class="rte-quick-toolbar">
     <ng-container *ngTemplateOutlet="toolbarTemplate" />
   </div>
-  
+
   <rte-suggestion
     #suggestion
     [getSuggestionList]="getSuggestionList"
-    (cdkSuggestionSelected)="onSuggestionSelected($event) "/>
+    (cdkSuggestionSelected)="onSuggestionSelected($event)"
+  />
 
   <div
     #richText
     class="rte-text-editor"
     [contentEditable]="!disabled"
+    (cdkSuggestionSelected)="onSuggestionSelected($event)"
     (mousedown)="onMouseDown($event)"
     [attr.placeholder]="placeholder"
     (focus)="onFocusIn()"
@@ -41,7 +48,8 @@
     (mouseup)="onMouseUp($event)"
     (input)="onValueChange($event)"
     (drop)="onDrop($event)"
-    (paste)="onPaste($event)">
+    (paste)="onPaste($event)"
+  >
     <ng-content></ng-content>
   </div>
 </div>

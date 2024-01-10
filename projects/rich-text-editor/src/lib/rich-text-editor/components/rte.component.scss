@@ -1,3 +1,16 @@
+rte-suggestion {
+  position: absolute;
+  display: inline-block;
+}
+
+.ready-display {
+  code {
+    display: block;
+    padding: 3px;
+    min-height: 1rem;
+  }
+}
+
 .rte-text-editor {
   h1 {
     color: rgb(66, 114, 89);
@@ -36,9 +49,19 @@
 
   code {
     font-family: monospace;
-    background-color: #aaa;
-
+    display: block;
     padding: 3px;
+    min-height: 1rem;
+  }
+
+  .code-inline {
+    font-family: monospace;
+    background-color: #aaa;
+    display: inline;
+    padding: 3px;
+    color: #983432;
+    min-height: 1rem;
+    min-width: 1rem;
   }
 
   ol {
@@ -53,13 +76,59 @@
   img {
   }
 
-  a, abbr, b, button, br, button, cite, code, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
-    display: inline ;
+  a,
+  abbr,
+  b,
+  button,
+  br,
+  button,
+  cite,
+  em,
+  i,
+  img,
+  input,
+  label,
+  q,
+  span,
+  strong,
+  sub,
+  sup,
+  textarea {
+    display: inline;
   }
 
-  div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
+  div,
+  p,
+  blockquote,
+  article,
+  aside,
+  dd,
+  dl,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  ol,
+  ul,
+  pre {
     display: block;
   }
+
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  padding: 12px;
+  overflow-wrap: break-word;
+  user-select: none;
+  color: unset !important;
+  z-index: 0 !important;
+  overflow: auto;
+  display: inline-block;
 }
 
 .rte-wrapper {
@@ -67,16 +136,6 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-div.rte-text-editor {
-  display: block;
-  height: 100%;
-  width: 100%;
-  padding: 12px;
-  overflow: auto;
-  background-color: inherit;
-  border: none;
 }
 
 div.rte-text-editor:focus {
@@ -88,7 +147,7 @@ div.rte-text-editor:focus {
 /* ------------------------------------------------------------------------ *
   CSS only placeholder for contenteditable
 * ------------------------------------------------------------------------ */
-[contenteditable='true']:empty:before {
+[contenteditable="true"]:empty:before {
   content: attr(placeholder);
   pointer-events: none;
   display: block; /* For Firefox */
@@ -162,7 +221,7 @@ div.rte-text-editor:focus {
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   min-width: 0;
-  overflow: hidden;  
+  overflow: hidden;
   border-color: #aaa transparent transparent transparent;
   &::after,
   &::before {
