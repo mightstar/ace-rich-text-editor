@@ -6,14 +6,13 @@
     <button
       class="rte-toolbar-btn rte-active"
       [ngClass]="{ 'rte-active': item.active }"
-      (click)="clickToolbarItem(item)">
+      (click)="clickToolbarItem(item)"
+    >
       <span [innerHTML]="item.icon"></span>
     </button>
     }
   </div>
 </ng-template>
-
-<button (click)="getEditorCode()">Get Editor Code (Dev)</button>
 
 <div #templates style="display: none">
   <code></code>
@@ -33,7 +32,8 @@
   <rte-suggestion
     #suggestion
     [getSuggestionList]="getSuggestionList"
-    (cdkSuggestionSelected)="onSuggestionSelected($event)"/>
+    (cdkSuggestionSelected)="onSuggestionSelected($event)"
+  />
 
   <div
     #richText
@@ -48,7 +48,8 @@
     (mouseup)="onMouseUp($event)"
     (input)="onValueChange($event)"
     (drop)="onDrop($event)"
-    (paste)="onPaste($event)">
+    (paste)="onPaste($event)"
+  >
     <ng-content></ng-content>
   </div>
 </div>

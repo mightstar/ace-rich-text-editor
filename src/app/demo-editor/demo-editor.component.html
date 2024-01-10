@@ -21,12 +21,14 @@
 </ng-template>
 
 <h2>Recruitler.com's Rich Text Editor</h2>
-  <!-- <div [innerText]="content"></div> -->
-  <button (click)="onBtnClick('bold')">Bold</button>
-  <button (click)="onBtnClick('italic')">Italic</button>
-  <button (click)="onBtnClick('heading1')">Heading1</button>
-  <button (click)="toggleDisabled()">{{ this.content.enabled ? 'enable' : 'disable' }}</button>
-  <button (click)="preloadContent()" style="float: right;">Preload</button>
+<!-- <div [innerText]="content"></div> -->
+<button (click)="onBtnClick('bold')">Bold</button>
+<button (click)="onBtnClick('italic')">Italic</button>
+<button (click)="onBtnClick('heading1')">Heading1</button>
+<button (click)="toggleDisabled()">
+  {{ this.content.enabled ? "enable" : "disable" }}
+</button>
+<button (click)="preloadContent()" style="float: right">Preload</button>
 
 <div class="demo-editor">
   <recruitler-rte
@@ -38,8 +40,9 @@
     (uploadImageRequest)="uploadImageRequest($event)"
     [uploadImageResult]="uploadImageResult"
     placeholder="What's your experience?"
-    style="width: 100%;"
-    [formControl]="content" />
+    style="width: 100%"
+    [formControl]="content"
+  />
 </div>
 
 <!-- OUTPUT EXAMPLE -->

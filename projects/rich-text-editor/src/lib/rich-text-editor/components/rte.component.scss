@@ -49,7 +49,6 @@ rte-suggestion {
 
   code {
     font-family: monospace;
-    background-color: #fff;
     display: block;
     padding: 3px;
     min-height: 1rem;
@@ -60,11 +59,10 @@ rte-suggestion {
     background-color: #aaa;
     display: inline;
     padding: 3px;
-    color:#983432;
+    color: #983432;
     min-height: 1rem;
     min-width: 1rem;
   }
-
 
   ol {
   }
@@ -78,11 +76,44 @@ rte-suggestion {
   img {
   }
 
-  a, abbr, b, button, br, button, cite, em , i, img , input , label, q, span, strong , sub ,sup, textarea {
-    display: inline ;
+  a,
+  abbr,
+  b,
+  button,
+  br,
+  button,
+  cite,
+  em,
+  i,
+  img,
+  input,
+  label,
+  q,
+  span,
+  strong,
+  sub,
+  sup,
+  textarea {
+    display: inline;
   }
 
-  div, p, blockquote, article, aside, dd, dl, h1, h2,h3,h4,h5,h6,li , ol, ul , pre {
+  div,
+  p,
+  blockquote,
+  article,
+  aside,
+  dd,
+  dl,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  ol,
+  ul,
+  pre {
     display: block;
   }
 
@@ -94,7 +125,7 @@ rte-suggestion {
   padding: 12px;
   overflow-wrap: break-word;
   user-select: none;
-  color:unset !important;
+  color: unset !important;
   z-index: 0 !important;
   overflow: auto;
   display: inline-block;
@@ -116,7 +147,7 @@ div.rte-text-editor:focus {
 /* ------------------------------------------------------------------------ *
   CSS only placeholder for contenteditable
 * ------------------------------------------------------------------------ */
-[contenteditable='true']:empty:before {
+[contenteditable="true"]:empty:before {
   content: attr(placeholder);
   pointer-events: none;
   display: block; /* For Firefox */
