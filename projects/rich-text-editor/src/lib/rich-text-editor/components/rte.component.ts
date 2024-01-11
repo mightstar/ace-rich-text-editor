@@ -416,7 +416,6 @@ export class CdkRichTextEditorComponent
       const handler = ace.edit(codeTag);
       handler.setOptions({
         maxLines: Infinity,
-        theme: "theme-monokai",
       });
       handler.session.setMode("ace/mode/javascript");
       handler.setTheme("ace/theme/monokai");
@@ -678,9 +677,6 @@ export class CdkRichTextEditorComponent
     let clonedTextNode = this.richText.nativeElement.cloneNode(
       true
     ) as HTMLElement;
-    clonedTextNode.remove();
-
-    clonedTextNode = this.richText.nativeElement.cloneNode(true) as HTMLElement;
     const hashtags = clonedTextNode.querySelectorAll("span[hashtag_component]");
     hashtags.forEach((hashtag: any) => {
       if (hashtag.children.length == 2) {
@@ -874,13 +870,13 @@ export class CdkRichTextEditorComponent
       }
       return;
     }
-    const text = event.clipboardData?.getData("text");
-    if (!text) {
-      return;
-    }
-    document.execCommand("insertText", false, text);
-    event.preventDefault();
-    event.stopPropagation();
+    // const text = event.clipboardData?.getData("text");
+    // if (!text) {
+    //   return;
+    // }
+    // document.execCommand("insertText", false, text);
+    // event.preventDefault();
+    // event.stopPropagation();
   };
 
   onFocusIn = () => {
