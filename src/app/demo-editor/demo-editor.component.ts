@@ -221,4 +221,8 @@ export class DemoEditorComponent implements OnInit {
   filter = (query: string, key: string) => {
     return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
   };
+
+  useLinks = (links: any): void => {
+    alert(links);
+  };
 }

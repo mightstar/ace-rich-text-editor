@@ -108,6 +108,7 @@ export class CdkRichTextEditorComponent
   @Output("hashtagRequest") hashtagRequest = new EventEmitter<string>();
   @Output() focus = new EventEmitter();
   @Output() blur = new EventEmitter();
+  @Output("linkRequest") linkRequest = new EventEmitter<string[]>();
   // vars
   touched = false;
   isSuggestionVisible: boolean = false;
@@ -117,6 +118,7 @@ export class CdkRichTextEditorComponent
     CdkSuggestionItem[]
   >([]);
   suggestionSelectionTemplate!: TemplateRef<any>;
+  links: string[] = [];
 
   // handlerEditor: any;
   constructor(private domSantanizer: SafeDOMPipe) {
@@ -208,6 +210,9 @@ export class CdkRichTextEditorComponent
     if (format == "code") {
       return this._isInlineTag("code");
     }
+    if (format == "link") {
+      return this._isInlineTag("a");
+    }
 
     return document.queryCommandState(format);
   }
@@ -241,6 +246,12 @@ export class CdkRichTextEditorComponent
         break;
       case "ordered-list":
         document.execCommand("insertOrderedList");
+        break;
+      case "link":
+        const sText = window.document.getSelection()?.toString();
+        document.execCommand("createLink", false, sText);
+        sText && this.links.push(sText);
+        this.linkOut();
         break;
       default:
         document.execCommand(format);
@@ -886,6 +897,31 @@ export class CdkRichTextEditorComponent
     this.blur.emit();
   }
 
+  linkOut() {
+    this.linkRequest.emit(this.links);
+  }
+
+  // urlify = (text: string) => {
+  //   console.log(text);
+  //   var urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  //   var match;
+  //   while ((match = urlRegex.exec(text)) !== null) {
+  //     var matchedText = match[0];
+  //     var startIndex = match.index;
+  //     var endIndex = startIndex + matchedText.length;
+
+  //     console.log("Matched Text:", matchedText);
+  //     console.log("Start Index:", startIndex);
+  //     console.log("End Index:", endIndex);
+
+  //     this.setLinkText(startIndex, endIndex);
+  //   }
+  //   // return text.replace(urlRegex, function (url) {
+  //   //   return '<a href="' + url + '">' + url + "</a>";
+  //   // });
+  // };
+
   onValueChange = (event: Event) => {
     event = event as KeyboardEvent;
     if (this.suggestionEnabled) {
@@ -895,4 +931,35 @@ export class CdkRichTextEditorComponent
     this._handleCodeBlock(event as InputEvent);
     this._contentChanged();
   };
+
+  // testButton = () => {
+  //   console.log(
+  //     this.richText.nativeElement.textContent ||
+  //       this.richText.nativeElement.innerText
+  //   );
+  // };
+
+  // setLinkText = (start: number, end: number) => {
+  //   const divElement = this.richText.nativeElement;
+  //   const selection = window.getSelection();
+  //   const range = document.createRange();
+
+  //   if (
+  //     divElement &&
+  //     divElement.firstChild &&
+  //     divElement.lastChild &&
+  //     selection
+  //   ) {
+  //     // Set the selection range from 0 to 5
+
+  //     range.setStart(divElement.firstChild, start);
+  //     range.setEnd(divElement.lastChild, end);
+
+  //     // Apply the selection
+  //     selection.removeAllRanges();
+  //     selection.addRange(range);
+  //     this.toggleFormat("link");
+  //     selection.removeAllRanges();
+  //   }
+  // };
 }
