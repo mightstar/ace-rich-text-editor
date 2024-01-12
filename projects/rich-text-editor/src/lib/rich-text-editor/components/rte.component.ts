@@ -932,6 +932,14 @@ export class CdkRichTextEditorComponent
     this._contentChanged();
   };
 
+  calcLength = () => {
+    const content = (
+      this.richText.nativeElement.innerText ||
+      this.richText.nativeElement.textContent
+    )?.trim();
+    alert(content?.length);
+  };
+
   // testButton = () => {
   //   console.log(
   //     this.richText.nativeElement.textContent ||
