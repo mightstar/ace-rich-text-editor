@@ -223,6 +223,6 @@ export class DemoEditorComponent implements OnInit {
   };
 
   useLinks = (links: any): void => {
-    alert(links);
+    console.log(links);
   };
 }
