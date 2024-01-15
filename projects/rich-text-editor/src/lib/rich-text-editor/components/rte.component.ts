@@ -99,7 +99,7 @@ export class CdkRichTextEditorComponent
   @Output() focus = new EventEmitter();
   @Output() blur = new EventEmitter();
   @Output("linkRequest") linkRequest = new EventEmitter<string[]>();
-  @Output("countRequest") countRequest = new EventEmitter<number>();
+  @Output("count") count = new EventEmitter<number>();
   // vars
   touched = false;
   isSuggestionVisible: boolean = false;
@@ -933,7 +933,7 @@ export class CdkRichTextEditorComponent
       this.richText.nativeElement.textContent
     )?.trim();
 
-    this.countRequest.emit(content?.length);
+    this.count.emit(content?.length);
   };
 
   insertAfter = (newNode: any, existingNode: any) => {
@@ -993,6 +993,4 @@ export class CdkRichTextEditorComponent
     let nodes = this.richText.nativeElement.childNodes;
     this.nodesReplaceContent(nodes, this.urlify);
   };
-
-  testButton = () => {};
 }

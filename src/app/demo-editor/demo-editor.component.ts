@@ -83,6 +83,7 @@ export class DemoEditorComponent implements OnInit {
     { value: "This is a test", disabled: false },
     [Validators.required]
   );
+  chars: number = 0;
   // suggestion dropdown (hashtags / usernames)
   suggestions: CdkSuggestionSetting[] = [];
   suggestionEnabled = true;
@@ -226,7 +227,8 @@ export class DemoEditorComponent implements OnInit {
     console.log(links);
   };
 
-  getCount = (count: number): void => {
-    console.log("count: ", count);
-  };
+  count(chars: number): void {
+    console.log(chars);
+    this.chars = chars;
+  }
 }
