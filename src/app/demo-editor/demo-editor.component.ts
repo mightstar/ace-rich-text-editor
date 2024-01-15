@@ -225,4 +225,8 @@ export class DemoEditorComponent implements OnInit {
   useLinks = (links: any): void => {
     console.log(links);
   };
+
+  getCount = (count: number): void => {
+    console.log("count: ", count);
+  };
 }

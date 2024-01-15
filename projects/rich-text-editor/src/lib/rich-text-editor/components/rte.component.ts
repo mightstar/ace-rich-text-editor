@@ -99,6 +99,7 @@ export class CdkRichTextEditorComponent
   @Output() focus = new EventEmitter();
   @Output() blur = new EventEmitter();
   @Output("linkRequest") linkRequest = new EventEmitter<string[]>();
+  @Output("countRequest") countRequest = new EventEmitter<number>();
   // vars
   touched = false;
   isSuggestionVisible: boolean = false;
@@ -695,6 +696,7 @@ export class CdkRichTextEditorComponent
     clonedTextNode.remove();
 
     this.catchLink();
+    this.countOut();
   };
 
   // CONTROL VALUE ACCESSOR & INPUT METHODS
@@ -905,9 +907,10 @@ export class CdkRichTextEditorComponent
   }
 
   urlify = (text: string | null) => {
-    var urlRegex = /(https?:\/\/[^\s]+\s+)/g;
+    let urlRegex = /(https?:\/\/[^\s]+&nbsp;+)/g;
+    if (text) text = this.convertToHtmlEntities(text);
     const replaceText = text?.replace(urlRegex, function (url) {
-      url = url.slice(0, -1);
+      url = url.slice(0, -6);
       return '<a href="' + url + '">' + url + "</a>&nbsp;";
     });
 
@@ -924,12 +927,13 @@ export class CdkRichTextEditorComponent
     this._contentChanged();
   };
 
-  calcLength = () => {
+  countOut = () => {
     const content = (
       this.richText.nativeElement.innerText ||
       this.richText.nativeElement.textContent
     )?.trim();
-    alert(content?.length);
+
+    this.countRequest.emit(content?.length);
   };
 
   insertAfter = (newNode: any, existingNode: any) => {
@@ -940,6 +944,12 @@ export class CdkRichTextEditorComponent
     let temp = document.createElement("template");
     temp.innerHTML = html;
     return temp.content.childNodes;
+  };
+
+  convertToHtmlEntities = (htmlString: string) => {
+    let tempElement = document.createElement("div");
+    tempElement.innerText = htmlString;
+    return tempElement.innerHTML;
   };
 
   nodesReplaceContent = (nodes: any, replaceFunc: Function) => {
