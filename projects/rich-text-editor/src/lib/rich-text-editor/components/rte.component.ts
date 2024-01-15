@@ -420,6 +420,7 @@ export class CdkRichTextEditorComponent
         codeTag.getElementsByTagName("input")[0].value = handler.getValue();
       });
       const codeFragment = document.createElement("input");
+      codeFragment.type = "hidden";
       codeFragment.value = content;
       codeTag.appendChild(codeFragment);
       this.codeEditors.push(handler);
