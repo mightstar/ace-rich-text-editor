@@ -1,5 +1,3 @@
-<!-- /Controls -->
-<!-- Rich text -->
 <ng-template #defaultToolbar>
   <div class="rte-toolbar-btn-group rte-popup">
     @for (item of toolbarItems; track item.action) {
@@ -20,9 +18,9 @@
 
 <div class="rte-wrapper">
   @if (isUploading) {
-  <div class="rte-uploading-progress">
-    <rte-circular-progress />
-  </div>
+    <div class="rte-uploading-progress">
+      <rte-circular-progress />
+    </div>
   }
 
   <div #quickToolbar class="rte-quick-toolbar">

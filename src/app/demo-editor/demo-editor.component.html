@@ -37,12 +37,15 @@
     [hashtagTemplate]="hashtagSelectionTemplate"
     (hashtagRequest)="hashtagSearch($event)"
     [hashtagResults]="hashtagResults"
+    (count)="count($event)"
     (uploadImageRequest)="uploadImageRequest($event)"
     [uploadImageResult]="uploadImageResult"
+    (linkRequest)="useLinks($event)"
     placeholder="What's your experience?"
     style="width: 100%"
     [formControl]="content"
   />
+  <p class="count" [ngClass]="{ 'warning': chars < 10,  'error': chars < 0 }">{{ chars }}</p>
 </div>
 
 <!-- OUTPUT EXAMPLE -->

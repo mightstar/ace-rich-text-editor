@@ -7,9 +7,7 @@ import {
   EmbeddedViewRef,
   EventEmitter,
   Input,
-  OnInit,
   Output,
-  SimpleChanges,
   TemplateRef,
   Type,
   ViewChild,
@@ -38,7 +36,6 @@ import { CdkSuggestionComponent } from "./suggestion/suggestion.component";
 import { SafeDOMPipe } from "../pipes/safe-dom.pipe";
 import {
   CdkSuggestionItem,
-  CdkSuggestionSelect,
   CdkSuggestionSetting,
   CdkToolbarItemSetting,
   IIMageRes,
@@ -71,7 +68,6 @@ export class CdkRichTextEditorComponent
   implements ControlValueAccessor, AfterViewInit, AfterContentChecked
 {
   @ViewChild("richText") richText!: ElementRef<HTMLElement>;
-  // @ViewChild('codeDialog') codeDialog! : any;
   @ViewChild("richText", { read: ViewContainerRef })
   richTextContainer!: ViewContainerRef;
   @ViewChild("quickToolbar") quickToolbarElement!: ElementRef<HTMLElement>;
@@ -92,13 +88,7 @@ export class CdkRichTextEditorComponent
   @Input() set uploadImageResult(val: IIMageRes) {
     this._setImage(val);
   }
-  // USER INPUTS
-  // @Input() set disabled(val: boolean) {
-  //   this.setDisabledState(val);
-  // }
   @Input() disabled: boolean | string = false;
-  // disabled = false;
-
   @Input() placeholder: string = "";
   // OUTPUTS
   @Output("uploadImageRequest") uploadImageRequest =
@@ -108,6 +98,8 @@ export class CdkRichTextEditorComponent
   @Output("hashtagRequest") hashtagRequest = new EventEmitter<string>();
   @Output() focus = new EventEmitter();
   @Output() blur = new EventEmitter();
+  @Output("linkRequest") linkRequest = new EventEmitter<string[]>();
+  @Output("count") count = new EventEmitter<number>();
   // vars
   touched = false;
   isSuggestionVisible: boolean = false;
@@ -117,8 +109,9 @@ export class CdkRichTextEditorComponent
     CdkSuggestionItem[]
   >([]);
   suggestionSelectionTemplate!: TemplateRef<any>;
+  links: string[] = [];
+  codeEditors: any = [];
 
-  // handlerEditor: any;
   constructor(private domSantanizer: SafeDOMPipe) {
     this.toolbarItems = TOOLBAR_ITEMS.map((item) => ({
       action: item.action,
@@ -208,6 +201,9 @@ export class CdkRichTextEditorComponent
     if (format == "code") {
       return this._isInlineTag("code");
     }
+    if (format == "link") {
+      return this._isInlineTag("a");
+    }
 
     return document.queryCommandState(format);
   }
@@ -229,10 +225,6 @@ export class CdkRichTextEditorComponent
       case "heading5":
         document.execCommand("formatBlock", false, "h5");
         break;
-      // case "code":
-      // this._wrapTag('code', ['rte-code']);
-      // document.execCommand('formatBlock', false, 'pre');
-      // break;
       case "quote":
         document.execCommand("formatBlock", false, "blockquote");
         break;
@@ -241,6 +233,11 @@ export class CdkRichTextEditorComponent
         break;
       case "ordered-list":
         document.execCommand("insertOrderedList");
+        break;
+      case "link":
+        const sText = window.document.getSelection()?.toString();
+        document.execCommand("createLink", false, sText);
+        this.linkOut();
         break;
       default:
         document.execCommand(format);
@@ -410,8 +407,8 @@ export class CdkRichTextEditorComponent
 
   formatCodeEditor = () => {
     const codeTags = this.richText.nativeElement.querySelectorAll("code");
+    this.codeEditors = [];
     codeTags.forEach((codeTag) => {
-      codeTag.setAttribute("contenteditable", "false");
       const content = codeTag.innerHTML;
       const handler = ace.edit(codeTag);
       handler.setOptions({
@@ -425,6 +422,8 @@ export class CdkRichTextEditorComponent
       const codeFragment = document.createElement("input");
       codeFragment.value = content;
       codeTag.appendChild(codeFragment);
+      this.codeEditors.push(handler);
+      codeTag.id = `code_${this.codeEditors.length - 1}`;
     });
   };
 
@@ -501,7 +500,6 @@ export class CdkRichTextEditorComponent
     ) as HTMLElement;
     const codeTags = clonedTextNode.querySelectorAll("code");
     codeTags.forEach((codeTag) => {
-      codeTag.attributes.removeNamedItem("contenteditable");
       codeTag.attributes.removeNamedItem("class");
       codeTag.attributes.removeNamedItem("style");
       codeTag.innerHTML = codeTag.getElementsByTagName("input")[0].value;
@@ -685,10 +683,6 @@ export class CdkRichTextEditorComponent
       }
     });
 
-    // const html = this.domSantanizer
-    //   .transform(clonedTextNode.innerHTML)
-    //   .toString();
-
     setTimeout(() => {
       const html = this.getEditorCode();
 
@@ -700,6 +694,9 @@ export class CdkRichTextEditorComponent
     }, 100);
 
     clonedTextNode.remove();
+
+    this.catchLink();
+    this.countOut();
   };
 
   // CONTROL VALUE ACCESSOR & INPUT METHODS
@@ -735,6 +732,17 @@ export class CdkRichTextEditorComponent
     }
   }
 
+  checkCodeTag = (currentNode: any) => {
+    let parent = currentNode;
+    while (parent !== this.richText.nativeElement) {
+      if (parent.nodeName === "CODE") {
+        return parseInt(parent.id.replace("code_", ""));
+      }
+      parent = parent.parentNode;
+    }
+    return -1;
+  };
+
   // INPUT EVENT
   onKeyDown = (event: KeyboardEvent) => {
     if (this.disabled) {
@@ -745,6 +753,15 @@ export class CdkRichTextEditorComponent
     } else if (event.ctrlKey && event.key === "y") {
       // empty?
     }
+
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const currentNode = selection!.focusNode;
+      const index = this.checkCodeTag(currentNode);
+      if (index > -1) {
+        this.codeEditors[index].focus();
+      }
+    }, 10);
 
     if (this.suggestionEnabled) {
       if (this.suggestion.onKeyDown(event)) {
@@ -870,13 +887,6 @@ export class CdkRichTextEditorComponent
       }
       return;
     }
-    // const text = event.clipboardData?.getData("text");
-    // if (!text) {
-    //   return;
-    // }
-    // document.execCommand("insertText", false, text);
-    // event.preventDefault();
-    // event.stopPropagation();
   };
 
   onFocusIn = () => {
@@ -886,6 +896,27 @@ export class CdkRichTextEditorComponent
     this.blur.emit();
   }
 
+  linkOut() {
+    const linkTags = this.richText.nativeElement.querySelectorAll("a");
+    this.links = [];
+    linkTags.forEach((element) => {
+      this.links.push(element.innerHTML);
+    });
+
+    this.linkRequest.emit(this.links);
+  }
+
+  urlify = (text: string | null) => {
+    let urlRegex = /(https?:\/\/[^\s]+&nbsp;+)/g;
+    if (text) text = this.convertToHtmlEntities(text);
+    const replaceText = text?.replace(urlRegex, function (url) {
+      url = url.slice(0, -6);
+      return '<a href="' + url + '">' + url + "</a>&nbsp;";
+    });
+
+    return replaceText !== text && replaceText;
+  };
+
   onValueChange = (event: Event) => {
     event = event as KeyboardEvent;
     if (this.suggestionEnabled) {
@@ -894,5 +925,72 @@ export class CdkRichTextEditorComponent
 
     this._handleCodeBlock(event as InputEvent);
     this._contentChanged();
+  };
+
+  countOut = () => {
+    const content = (
+      this.richText.nativeElement.innerText ||
+      this.richText.nativeElement.textContent
+    )?.trim();
+
+    this.count.emit(content?.length);
+  };
+
+  insertAfter = (newNode: any, existingNode: any) => {
+    existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+  };
+
+  htmlToElems = (html: any) => {
+    let temp = document.createElement("template");
+    temp.innerHTML = html;
+    return temp.content.childNodes;
+  };
+
+  convertToHtmlEntities = (htmlString: string) => {
+    let tempElement = document.createElement("div");
+    tempElement.innerText = htmlString;
+    return tempElement.innerHTML;
+  };
+
+  nodesReplaceContent = (nodes: any, replaceFunc: Function) => {
+    const stack = [...nodes];
+    const topParent = nodes[0].parentNode;
+
+    while (stack.length > 0) {
+      const currentNode = stack.pop() as ChildNode;
+      const parent = currentNode.parentNode;
+      const nodeName = currentNode.nodeName;
+
+      if (parent) {
+        if (!(nodeName === "CODE" || nodeName === "A")) {
+          if (currentNode.childNodes.length > 0 && parent === topParent) {
+            // Push child nodes onto the stack
+            stack.push(...Array.from(currentNode.childNodes));
+          } else {
+            const newContent = replaceFunc(currentNode.textContent);
+
+            if (newContent) {
+              // Check if the parent contains the current node before replacing
+              if (parent.contains(currentNode)) {
+                const newNodes: any = this.htmlToElems(newContent);
+                const length = newNodes.length;
+                for (let i = 0; i < length; i++) {
+                  parent.insertBefore(newNodes[0], currentNode);
+                }
+                // remove the chosen element
+                parent.removeChild(currentNode);
+              }
+
+              this.linkOut();
+            }
+          }
+        }
+      }
+    }
+  };
+
+  catchLink = () => {
+    let nodes = this.richText.nativeElement.childNodes;
+    this.nodesReplaceContent(nodes, this.urlify);
   };
 }

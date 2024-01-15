@@ -83,6 +83,7 @@ export class DemoEditorComponent implements OnInit {
     { value: "This is a test", disabled: false },
     [Validators.required]
   );
+  chars: number = 0;
   // suggestion dropdown (hashtags / usernames)
   suggestions: CdkSuggestionSetting[] = [];
   suggestionEnabled = true;
@@ -221,4 +222,13 @@ export class DemoEditorComponent implements OnInit {
   filter = (query: string, key: string) => {
     return key.toLowerCase().indexOf(query.toLowerCase()) != -1;
   };
+
+  useLinks = (links: any): void => {
+    console.log(links);
+  };
+
+  count(chars: number): void {
+    console.log(chars);
+    this.chars = chars;
+  }
 }
