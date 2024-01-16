@@ -66,6 +66,10 @@ export const TOOLBAR_ITEMS = [
     icon: "Link",
   },
   {
+    action: "code",
+    icon: "Code",
+  },
+  {
     action: "component",
     icon: "Com",
   },
