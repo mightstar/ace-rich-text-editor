@@ -1,81 +1,57 @@
+// unused?
+// .ready-display {
+//   code {
+//     display: block;
+//     padding: 3px;
+//     min-height: 1rem;
+//   }
+// }
+
 rte-suggestion {
   position: absolute;
   display: inline-block;
 }
 
-.ready-display {
-  code {
-    display: block;
-    padding: 3px;
-    min-height: 1rem;
-  }
+.rte-wrapper {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .rte-text-editor {
+  width: 100%;
+  overflow-wrap: break-word;
+  user-select: none;
+  color: unset !important;
+  z-index: 0 !important;
+  overflow: auto;
+  display: inline-block;
+  * {
+    transition: none;
+  }
+  &:focus {
+    box-shadow: none;
+    border: 0;
+    outline: none;
+  }  
   h1 {
     color: rgb(66, 114, 89);
   }
-
   h2 {
     color: rgb(193, 211, 113);
   }
-
-  h3 {
-  }
-
-  h4 {
-  }
-
-  h5 {
-  }
-
-  b {
-  }
-
-  i {
-  }
-
-  u {
-  }
-
-  blockquote {
-    border-left: 2px solid #ddd;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 10px;
-    color: #aaa;
-    font-style: italic;
-  }
-
-  code {
-    font-family: monospace;
-    display: block;
-    padding: 3px;
-    min-height: 1rem;
-  }
-
-  .code-inline {
-    font-family: monospace;
-    background-color: #aaa;
-    display: inline;
-    padding: 3px;
-    color: #983432;
-    min-height: 1rem;
-    min-width: 1rem;
-  }
-
-  ol {
-  }
-
-  ol li {
-  }
-
-  ul li {
-  }
-
-  img {
-  }
-
+  h3 {}
+  h4 {}
+  h5 {}
+  b {}
+  i {}
+  u {}
+  ol {}
+  ol li {}
+  ul li {}
+  img {}
+  
   a,
   abbr,
   b,
@@ -96,7 +72,7 @@ rte-suggestion {
   textarea {
     display: inline;
   }
-
+  
   div,
   p,
   blockquote,
@@ -117,42 +93,46 @@ rte-suggestion {
     display: block;
   }
 
-  position: absolute !important;
-  top: 0;
-  left: 0;
-  width: calc(100% - 24px);
-  height: calc(100% - 24px);
-  padding: 12px;
-  overflow-wrap: break-word;
-  user-select: none;
-  color: unset !important;
-  z-index: 0 !important;
-  overflow: auto;
-  display: inline-block;
-}
+  blockquote {
+    border-left: 2px solid #ddd;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 10px;
+    color: #aaa;
+    font-style: italic;
+  }
 
-.rte-wrapper {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
+  // ACE CODE EDITOR
+  code {
+    font-family: monospace;
+    display: block;
+    padding: 3px;
+    min-height: 1rem;
+  }
+  .code-inline {
+    font-family: monospace;
+    background-color: #aaa;
+    display: inline;
+    padding: 3px;
+    color: #983432;
+    min-height: 1rem;
+    min-width: 1rem;
+  }
+  .ace_editor, 
+  .ace_editor div {
+    font-family: monospace;
+  }
 
-div.rte-text-editor:focus {
-  box-shadow: none;
-  border: 0px;
-  outline: 0px solid transparent !important;
-}
-
-/* ------------------------------------------------------------------------ *
-  CSS only placeholder for contenteditable
-* ------------------------------------------------------------------------ */
-[contenteditable="true"]:empty:before {
-  content: attr(placeholder);
-  pointer-events: none;
-  display: block; /* For Firefox */
-  color: rgb(var(--body-text));
-  // opacity: 0.65;
+  /* ------------------------------------------------------------------------ *
+    CSS only placeholder for contenteditable
+  * ------------------------------------------------------------------------ */
+  [contenteditable="true"]:empty:before {
+    content: attr(placeholder);
+    pointer-events: none;
+    display: block; /* For Firefox */
+    color: rgb(var(--body-text));
+    // opacity: 0.65;
+  }
 }
 
 .rte-uploading-progress {
@@ -166,25 +146,25 @@ div.rte-text-editor:focus {
 }
 
 .rte-toolbar-btn {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
   align-items: center;
+  height: 33px;
+  padding: 0;
+  width: 34px;
+  margin: 2px 1px 2px 1px;
   background: 0 0;
   border: 0;
   border-radius: 3px;
   box-shadow: none;
   color: #12171d;
-  display: flex;
-  flex: 0 0 auto;
   font-size: 17px;
   font-style: normal;
   font-weight: 400;
-  height: 33px;
-  justify-content: center;
-  margin: 2px 1px 2px 1px;
   outline: 0;
   overflow: hidden;
-  padding: 0;
   text-transform: none;
-  width: 34px;
   cursor: pointer;
   &.rte-active {
     background-color: #c8cbcf;
