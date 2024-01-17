@@ -204,6 +204,9 @@ export class CdkRichTextEditorComponent
     if (format == "link") {
       return this._isInlineTag("a");
     }
+    if (format == "code") {
+      return this._isInlineTag("code");
+    }
 
     return document.queryCommandState(format);
   }
@@ -238,6 +241,22 @@ export class CdkRichTextEditorComponent
         const sText = window.document.getSelection()?.toString();
         document.execCommand("createLink", false, sText);
         this.linkOut();
+        break;
+      case "code":
+        document.execCommand(
+          "insertHTML",
+          false,
+          "<h1 id='codeTemp'>" + document.getSelection() + "</h1>"
+        );
+        const codeTag = document.getElementById("codeTemp");
+        var newElement = document.createElement("code");
+        if (codeTag) {
+          newElement.innerHTML = codeTag.innerHTML;
+          if (codeTag.parentNode)
+            codeTag.parentNode.replaceChild(newElement, codeTag);
+          this.formatCodeEditor();
+        }
+
         break;
       default:
         document.execCommand(format);
@@ -955,11 +974,11 @@ export class CdkRichTextEditorComponent
 
   nodesReplaceContent = (nodes: any, replaceFunc: Function) => {
     const stack = [...nodes];
-    const topParent = nodes[0].parentNode;
+    const topParent = nodes[0]?.parentNode;
 
     while (stack.length > 0) {
       const currentNode = stack.pop() as ChildNode;
-      const parent = currentNode.parentNode;
+      const parent = currentNode?.parentNode;
       const nodeName = currentNode.nodeName;
 
       if (parent) {
