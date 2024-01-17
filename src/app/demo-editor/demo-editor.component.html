@@ -28,6 +28,7 @@
 <button (click)="toggleDisabled()">
   {{ this.content.enabled ? "enable" : "disable" }}
 </button>
+<button (click)="onBtnClick('code')">Code</button>
 <button (click)="preloadContent()" style="float: right">Preload</button>
 
 <div class="demo-editor">
@@ -45,7 +46,9 @@
     style="width: 100%"
     [formControl]="content"
   />
-  <p class="count" [ngClass]="{ 'warning': chars < 10,  'error': chars < 0 }">{{ chars }}</p>
+  <p class="count" [ngClass]="{ warning: chars < 10, error: chars < 0 }">
+    {{ chars }}
+  </p>
 </div>
 
 <!-- OUTPUT EXAMPLE -->
