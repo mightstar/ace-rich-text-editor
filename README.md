@@ -1,27 +1,41 @@
-# Rte
+# Angular Rich Text and Code Editor
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.1.
+This project is a rich text editor developed using Angular, with an added code editor feature implemented using the Ace library.
 
-## Development server
+## Features
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- **Rich Text Editing**: Utilizes Angular to create a user-friendly rich text editing experience.
+- **Code Editing**: Incorporates the Ace library to enable code editing functionalities.
+- **Customizable**: Easily customize and extend both the rich text and code editing features to fit your needs.
+- **Responsive Design**: Designed to work seamlessly across various screen sizes and devices.
 
-## Code scaffolding
+## Getting Started
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+1. **Installation**: Clone the repository and install dependencies using npm.
 
-## Build
+    ```bash
+    git clone https://github.com/mightstar/ace-rich-text-editor.git
+    cd rich-text-editor
+    npm install
+    ```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+2. **Run Locally**: Start the development server.
 
-## Running unit tests
+    ```bash
+    ng serve
+    ```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+3. **Usage**: Access the application in your browser at `http://localhost:3333`.
 
-## Running end-to-end tests
+## Usage
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+- **Rich Text Editing**: Click on the text area to start typing and formatting text.
+- **Code Editing**: Switch to the code editor tab to write and edit code using the Ace library.
 
-## Further help
+## Contributing
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Contributions are welcome! Feel free to submit pull requests or open issues for any bugs or feature requests.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
